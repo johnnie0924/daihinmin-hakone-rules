@@ -13,19 +13,19 @@ function* combinations<T>(items: T[], maxSize: number): Generator<T[]> {
   const n = items.length
   const limit = Math.min(maxSize, n)
 
-  function backtrack(start: number, current: T[]) {
+  function* backtrack(start: number, current: T[]): Generator<T[]> {
     if (current.length > 0) {
       yield current.slice()
     }
     if (current.length === limit) return
     for (let i = start; i < n; i++) {
       current.push(items[i])
-      backtrack(i + 1, current)
+      yield* backtrack(i + 1, current)
       current.pop()
     }
   }
 
-  backtrack(0, [])
+  yield* backtrack(0, [])
 }
 
 function collectCandidates(state: FullGameState, playerId: string): Candidate[] {
@@ -57,6 +57,30 @@ export function chooseNpcAction(
   strategy: NpcStrategy,
 ): GameAction {
   const candidates = collectCandidates(state, playerId)
+
+  // #region agent log
+  fetch('http://127.0.0.1:7247/ingest/0cf27e85-b46d-496f-b8be-1cfdc250cc45', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Debug-Session-Id': 'd14ffc',
+    },
+    body: JSON.stringify({
+      sessionId: 'd14ffc',
+      runId: 'build-fix-1',
+      hypothesisId: 'H1',
+      location: 'src/logic/npc.ts:chooseNpcAction',
+      message: 'NPC candidates after collection',
+      data: {
+        playerId,
+        strategy,
+        candidateCount: candidates.length,
+      },
+      timestamp: Date.now(),
+    }),
+  }).catch(() => {})
+  // #endregion agent log
+
   if (candidates.length === 0) {
     return { kind: 'pass' }
   }
