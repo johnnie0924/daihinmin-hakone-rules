@@ -1,0 +1,99 @@
+type Props = {
+  roundsPerGame: number
+  onChangeRoundsPerGame: (value: number) => void
+  enableSwitchback: boolean
+  onChangeEnableSwitchback: (value: boolean) => void
+  enableEruption: boolean
+  onChangeEnableEruption: (value: boolean) => void
+  enableTenkanoken: boolean
+  onChangeEnableTenkanoken: (value: boolean) => void
+  enableOldRoad: boolean
+  onChangeEnableOldRoad: (value: boolean) => void
+  enableSekisho: boolean
+  onChangeEnableSekisho: (value: boolean) => void
+  disabled: boolean
+}
+
+function GameConfigPanel({
+  roundsPerGame,
+  onChangeRoundsPerGame,
+  enableSwitchback,
+  onChangeEnableSwitchback,
+  enableEruption,
+  onChangeEnableEruption,
+  enableTenkanoken,
+  onChangeEnableTenkanoken,
+  enableOldRoad,
+  onChangeEnableOldRoad,
+  enableSekisho,
+  onChangeEnableSekisho,
+  disabled,
+}: Props) {
+  return (
+    <section className="game-config-section">
+      <h2 className="game-config-title">ゲーム設定（ホストのみ）</h2>
+      <div className="game-config-row">
+        <label htmlFor="roundsPerGame">ラウンド数</label>
+        <input
+          id="roundsPerGame"
+          type="number"
+          min={1}
+          max={10}
+          value={roundsPerGame}
+          onChange={(e) => onChangeRoundsPerGame(Number(e.target.value) || 1)}
+          disabled={disabled}
+        />
+      </div>
+      <div className="game-config-rules">
+        <label className="game-config-checkbox">
+          <input
+            type="checkbox"
+            checked={enableSwitchback}
+            onChange={(e) => onChangeEnableSwitchback(e.target.checked)}
+            disabled={disabled}
+          />
+          スイッチバック（11バック）
+        </label>
+        <label className="game-config-checkbox">
+          <input
+            type="checkbox"
+            checked={enableEruption}
+            onChange={(e) => onChangeEnableEruption(e.target.checked)}
+            disabled={disabled}
+          />
+          大涌谷の噴火（8切り）
+        </label>
+        <label className="game-config-checkbox">
+          <input
+            type="checkbox"
+            checked={enableTenkanoken}
+            onChange={(e) => onChangeEnableTenkanoken(e.target.checked)}
+            disabled={disabled}
+          />
+          天下の険（革命）
+        </label>
+        <label className="game-config-checkbox">
+          <input
+            type="checkbox"
+            checked={enableOldRoad}
+            onChange={(e) => onChangeEnableOldRoad(e.target.checked)}
+            disabled={disabled}
+          />
+          旧街道の一里塚（階段）
+        </label>
+        <label className="game-config-checkbox">
+          <input
+            type="checkbox"
+            checked={enableSekisho}
+            onChange={(e) => onChangeEnableSekisho(e.target.checked)}
+            disabled={disabled}
+          />
+          箱根関所（縛り）
+        </label>
+      </div>
+    </section>
+  )
+}
+
+export default GameConfigPanel
+

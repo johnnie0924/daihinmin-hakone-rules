@@ -1,0 +1,1402 @@
+.app {
+  max-width: 560px;
+  margin: 0 auto;
+  padding: 1.5rem;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+@media (min-width: 768px) {
+  .app {
+    max-width: 720px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .app {
+    max-width: 840px;
+  }
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.header h1 {
+  font-size: 1.5rem;
+  margin: 0;
+  color: #1a1a2e;
+}
+
+.subtitle {
+  margin: 0.25rem 0 0;
+  font-size: 0.875rem;
+  color: #666;
+}
+
+.rules-link {
+  margin-top: 0.5rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.85rem;
+  color: #1a73e8;
+  text-decoration: none;
+  border-radius: 999px;
+  padding: 0.15rem 0.65rem;
+  background: rgba(26,115,232,0.06);
+}
+
+.rules-link::before {
+  content: 'ℹ️';
+  font-size: 0.9rem;
+}
+
+.rules-link:hover {
+  background: rgba(26,115,232,0.12);
+}
+
+.nickname-section {
+  margin-bottom: 1rem;
+}
+
+.nickname-section label {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #555;
+  margin-bottom: 0.35rem;
+}
+
+.nickname-section input {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 0.95rem;
+}
+
+.role-section {
+  margin-bottom: 1rem;
+}
+
+.role-label {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #555;
+  margin-bottom: 0.35rem;
+}
+
+.role-option {
+  display: block;
+  font-size: 0.9rem;
+  margin-bottom: 0.35rem;
+  cursor: pointer;
+}
+
+.role-option input {
+  margin-right: 0.5rem;
+}
+
+.peer-section {
+  background: #f5f5f7;
+  border-radius: 12px;
+  margin-bottom: 1.5rem;
+  overflow: hidden;
+}
+
+.peer-section-toggle {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1.25rem;
+  border: none;
+  background: #f5f5f7;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #1a1a2e;
+  cursor: pointer;
+  text-align: left;
+  border-radius: 12px;
+}
+
+.peer-section-toggle:hover {
+  background: #ebebed;
+}
+
+.toggle-icon {
+  font-size: 0.8rem;
+  opacity: 0.8;
+}
+
+.peer-section-body {
+  padding: 0 1.25rem 1rem;
+  padding-top: 0;
+}
+
+.peer-section.collapsed .peer-section-body {
+  display: none;
+}
+
+/* ────────── ゲーム設定（ホスト用） ────────── */
+
+.game-config-section {
+  margin-bottom: 1rem;
+  padding: 0.75rem 1rem;
+  border-radius: 12px;
+  background: #f5f5f7;
+}
+
+.game-config-title {
+  margin: 0 0 0.5rem;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #333;
+}
+
+.game-config-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+  font-size: 0.85rem;
+}
+
+.game-config-row label {
+  min-width: 80px;
+  font-weight: 600;
+  color: #555;
+}
+
+.game-config-row input[type="number"] {
+  width: 80px;
+  padding: 0.25rem 0.5rem;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 0.85rem;
+}
+
+.game-config-rules {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin-top: 0.25rem;
+}
+
+.game-config-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.8rem;
+  color: #444;
+}
+
+.peer-section label {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #555;
+  margin-bottom: 0.35rem;
+}
+
+.my-id {
+  margin-top: 1rem;
+}
+
+.my-id .id-value {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.my-id code {
+  font-size: 0.8rem;
+  background: #fff;
+  padding: 0.35rem 0.6rem;
+  border-radius: 6px;
+  border: 1px solid #e0e0e0;
+  flex: 1;
+  word-break: break-all;
+}
+
+.copy-btn {
+  padding: 0.35rem 0.6rem;
+  font-size: 0.75rem;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  background: #fff;
+  cursor: pointer;
+}
+
+.copy-btn:hover {
+  background: #eee;
+}
+
+.loading {
+  color: #888;
+  font-size: 0.9rem;
+}
+
+.connect-form {
+  margin-bottom: 0.75rem;
+}
+
+.connect-row {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.connect-row input {
+  flex: 1;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 0.9rem;
+}
+
+.connect-row button {
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  border: none;
+  background: #1a1a2e;
+  color: #fff;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.connect-row button:disabled {
+  background: #aaa;
+  cursor: not-allowed;
+}
+
+.connect-row button.disconnect {
+  background: #c0392b;
+}
+
+.status {
+  font-size: 0.8rem;
+  color: #555;
+  margin-top: 0.5rem;
+}
+
+.error {
+  margin-top: 0.5rem;
+  padding: 0.5rem;
+  background: #ffebee;
+  color: #c62828;
+  border-radius: 6px;
+  font-size: 0.85rem;
+}
+
+.chat-section {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.messages {
+  flex: 1;
+  min-height: 0;
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  padding: 1rem;
+  overflow-y: auto;
+  margin-bottom: 0.75rem;
+}
+
+.empty {
+  color: #888;
+  font-size: 0.9rem;
+  text-align: center;
+  margin: 2rem 0;
+}
+
+.message {
+  margin-bottom: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 8px;
+  max-width: 85%;
+}
+
+.message.me {
+  margin-left: auto;
+  background: #1a1a2e;
+  color: #fff;
+}
+
+.message.remote {
+  background: #e8e8ed;
+  color: #1a1a2e;
+}
+
+.message.system {
+  margin-left: auto;
+  margin-right: auto;
+  text-align: center;
+  background: transparent;
+  color: #666;
+  font-size: 0.85rem;
+}
+
+.event-live-region {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.message-label {
+  display: block;
+  font-size: 0.7rem;
+  opacity: 0.85;
+  margin-bottom: 0.2rem;
+}
+
+.message-text {
+  font-size: 0.95rem;
+  word-break: break-word;
+}
+
+.send-form {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.send-form input {
+  flex: 1;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 0.95rem;
+}
+
+.send-form button {
+  padding: 0.6rem 1.25rem;
+  border-radius: 8px;
+  border: none;
+  background: #1a1a2e;
+  color: #fff;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.send-form button:disabled {
+  background: #aaa;
+  cursor: not-allowed;
+}
+
+/* ────────── タブ ────────── */
+
+.tab-bar {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.tab-btn {
+  flex: 1;
+  position: relative;
+  padding: 0.55rem;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  background: #f5f5f7;
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  color: #555;
+}
+
+.tab-btn.tab-active {
+  background: #1a1a2e;
+  color: #fff;
+  border-color: #1a1a2e;
+}
+
+.tab-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.25rem;
+  height: 1.25rem;
+  padding: 0 0.35rem;
+  margin-left: 0.35rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #fff;
+  background: #c62828;
+  border-radius: 999px;
+  vertical-align: middle;
+}
+
+/* ────────── ゲームセクション ────────── */
+
+.game-section {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.game-waiting {
+  text-align: center;
+  padding: 2rem 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.btn-start-game {
+  padding: 0.75rem 2rem;
+  background: #2e7d32;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-start-game:hover {
+  background: #1b5e20;
+}
+
+.game-hint {
+  font-size: 0.8rem;
+  color: #888;
+}
+
+/* ────────── ゲームボード ────────── */
+
+.gameboard {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  position: relative;
+}
+
+.game-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #333;
+}
+
+.game-round {
+  margin-right: auto;
+}
+
+.game-parent {
+  font-size: 0.8rem;
+  color: #555;
+}
+
+.game-error {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #ffebee;
+  color: #c62828;
+  padding: 0.5rem 0.75rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
+}
+
+.game-error-close {
+  border: none;
+  background: transparent;
+  color: #c62828;
+  font-size: 1rem;
+  cursor: pointer;
+  padding: 0 0.25rem;
+}
+
+/* ────────── バッジ ────────── */
+
+.badge {
+  display: inline-block;
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.badge-revolution { background: #ff6b35; color: #fff; }
+.badge-eleven     { background: #7b2ff7; color: #fff; }
+.badge-suit       { background: #0288d1; color: #fff; }
+.badge-deck       { background: #555; color: #fff; }
+
+/* ────────── 相手プレイヤーエリア ────────── */
+
+.opponents-area {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.opponent-player {
+  flex: 1;
+  background: #f0f0f4;
+  border-radius: 10px;
+  padding: 0.5rem 0.75rem;
+}
+
+.opponent-cards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+  margin-top: 0.4rem;
+}
+
+/* ────────── プレイヤー情報 ────────── */
+
+.player-info {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  padding: 0.3rem 0;
+}
+
+.player-info-active {
+  font-weight: 700;
+  color: #1a1a2e;
+}
+
+.player-name {
+  flex: 1;
+  font-weight: 600;
+}
+
+.player-hand-count {
+  background: #e0e0e0;
+  padding: 0.1rem 0.4rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+}
+
+.player-score {
+  color: #888;
+  font-size: 0.8rem;
+  min-width: 32px;
+  text-align: right;
+}
+
+.btn-inabauwa-target {
+  font-size: 0.7rem;
+  padding: 0.2rem 0.4rem;
+  border: 1px solid #7b2ff7;
+  color: #7b2ff7;
+  background: transparent;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+/* ────────── 場エリア ────────── */
+
+.field-area {
+  background: #e8f5e9;
+  border-radius: 12px;
+  padding: 0.75rem 1rem;
+  min-height: 110px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.field-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.field-top {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.field-player-label {
+  font-size: 0.78rem;
+  color: #555;
+  margin: 0;
+}
+
+.field-cards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.field-empty {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #888;
+  font-size: 0.9rem;
+}
+
+/* ────────── 自分のエリア ────────── */
+
+.self-area {
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  padding: 0.75rem 1rem;
+}
+
+/* ────────── 手札エリア ────────── */
+
+.hand-area {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.hand-toolbar {
+  display: flex;
+  justify-content: flex-start;
+}
+
+.btn-sort-hand {
+  padding: 0.35rem 0.75rem;
+  font-size: 0.85rem;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  background: #f5f5f7;
+  color: #555;
+  cursor: pointer;
+}
+
+.btn-sort-hand:hover {
+  background: #eee;
+}
+
+.hand-cards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  min-height: 90px;
+}
+
+.hand-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.hand-waiting {
+  font-size: 0.85rem;
+  color: #888;
+  text-align: center;
+  margin: 0;
+}
+
+.hand-validation-message {
+  margin-top: 0.25rem;
+  font-size: 0.8rem;
+  color: #c62828;
+}
+
+.hand-validation-message-positive {
+  color: #1b5e20;
+}
+
+.scoreboard-diff {
+  margin-left: 0.25rem;
+  font-size: 0.8em;
+  color: #c62828;
+}
+
+.hand-shortcut-hint {
+  margin-top: 0.15rem;
+  font-size: 0.75rem;
+  color: #777;
+}
+
+.btn-play {
+  padding: 0.5rem 1rem;
+  background: #1a1a2e;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-play:disabled {
+  background: #aaa;
+  cursor: not-allowed;
+}
+
+.btn-pass {
+  padding: 0.5rem 1rem;
+  background: #f5f5f7;
+  color: #333;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.btn-inabauwa {
+  padding: 0.5rem 1rem;
+  background: #7b2ff7;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* ────────── カード ────────── */
+
+.card {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  background: #fff;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.12);
+  position: relative;
+  user-select: none;
+  transition: transform 0.15s, box-shadow 0.15s;
+  box-sizing: border-box;
+}
+
+.card-normal {
+  width: 60px;
+  height: 88px;
+  font-size: 1.5rem;
+}
+
+.card-small {
+  width: 42px;
+  height: 60px;
+  font-size: 1rem;
+}
+
+.card-clickable {
+  cursor: pointer;
+}
+
+.card-clickable:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+}
+
+.card-selected {
+  transform: translateY(-10px);
+  box-shadow: 0 6px 16px rgba(26,26,46,0.35);
+  border-color: #1a1a2e;
+}
+
+.card-red { color: #c62828; }
+.card-black { color: #1a1a2e; }
+
+.card-joker {
+  background: linear-gradient(135deg, #fff9c4 0%, #f8bbd9 50%, #b3e5fc 100%);
+  border-color: #9c27b0;
+}
+
+.card-back {
+  background: repeating-linear-gradient(
+    45deg,
+    #1a1a2e,
+    #1a1a2e 5px,
+    #2e3f7f 5px,
+    #2e3f7f 10px
+  );
+  border-color: #1a1a2e;
+}
+
+.card-back-pattern {
+  width: 100%;
+  height: 100%;
+}
+
+.card-corner {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 1;
+  font-size: 0.7em;
+  gap: 1px;
+}
+
+.card-corner-tl { top: 4px; left: 5px; }
+.card-corner-br { bottom: 4px; right: 5px; }
+
+.card-corner-flip {
+  transform: rotate(180deg);
+}
+
+.card-rank-label {
+  font-weight: 700;
+  font-size: 1em;
+}
+
+.card-suit-small {
+  font-size: 0.75em;
+}
+
+.card-center-suit {
+  font-size: 1.4em;
+}
+
+.card-center-joker {
+  font-size: 1.6em;
+}
+
+/* ────────── スコアボード ────────── */
+
+.scoreboard {
+  background: #fff;
+  border-radius: 14px;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+}
+
+.scoreboard-title {
+  font-size: 1.3rem;
+  margin: 0;
+  color: #1a1a2e;
+}
+
+.scoreboard-round-winner,
+.scoreboard-game-winner {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #2e7d32;
+  margin: 0;
+}
+
+.scoreboard-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+}
+
+.scoreboard-table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.scoreboard-table th,
+.scoreboard-table td {
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+  border-bottom: 1px solid #eee;
+}
+
+.scoreboard-table th {
+  font-weight: 700;
+  color: #555;
+  font-size: 0.8rem;
+}
+
+@media (max-width: 480px) {
+  .scoreboard-table th,
+  .scoreboard-table td {
+    padding: 0.35rem 0.5rem;
+    font-size: 0.75rem;
+  }
+}
+
+.scoreboard-self td {
+  font-weight: 700;
+  color: #1a1a2e;
+}
+
+.scoreboard-round-info {
+  color: #888;
+  font-size: 0.85rem;
+  margin: 0;
+}
+
+.scoreboard-waiting {
+  color: #888;
+  font-size: 0.85rem;
+  margin: 0;
+}
+
+.btn-next-round {
+  padding: 0.65rem 2rem;
+  background: #1a1a2e;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.scoreboard-game-end-actions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
+
+.btn-leave-game {
+  padding: 0.6rem 1.25rem;
+  font-size: 0.95rem;
+  border: 1px solid #c62828;
+  border-radius: 10px;
+  background: #fff;
+  color: #c62828;
+  cursor: pointer;
+}
+
+.btn-leave-game:hover {
+  background: #ffebee;
+}
+
+.btn-continue-game {
+  padding: 0.6rem 1.25rem;
+  font-size: 0.95rem;
+  border: none;
+  border-radius: 10px;
+  background: #1a1a2e;
+  color: #fff;
+  cursor: pointer;
+}
+
+.btn-continue-game:hover {
+  background: #2d2d44;
+}
+
+/* ────────── イナバウワーモーダル ────────── */
+
+.debug-panel {
+  margin-top: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.75rem;
+  background: #fff8e1;
+  border: 1px dashed #f9a825;
+  border-radius: 8px;
+  color: #444;
+}
+
+.debug-panel div {
+  line-height: 1.3;
+}
+
+.reveal-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+
+.reveal-modal-inner {
+  background: #fff;
+  border-radius: 16px;
+  padding: 1.5rem 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  max-width: 320px;
+  width: 90%;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+}
+
+.reveal-modal-inner h3 {
+  margin: 0;
+  color: #7b2ff7;
+  font-size: 1.2rem;
+}
+
+.reveal-modal-inner p {
+  margin: 0;
+  text-align: center;
+  font-size: 0.9rem;
+  color: #333;
+}
+
+.reveal-card {
+  display: flex;
+  justify-content: center;
+}
+
+.btn-close-reveal,
+.btn-cancel {
+  padding: 0.5rem 1.5rem;
+  background: #f5f5f7;
+  color: #333;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.95rem;
+}
+
+.btn-target {
+  width: 100%;
+  padding: 0.6rem 1rem;
+  background: #7b2ff7;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-target:hover {
+  background: #6a1de0;
+}
+
+/* ────────── 箱根ルール 特殊イベント演出 ────────── */
+
+.event-overlay {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 200ms ease-out;
+  z-index: 90;
+}
+
+.event-overlay-visible {
+  opacity: 1;
+}
+
+.event-layer {
+  position: relative;
+  width: 100%;
+  max-width: 560px;
+  height: 80vh;
+  max-height: 480px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-weight: 700;
+  text-shadow: 0 2px 6px rgba(0,0,0,0.6);
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.event-text {
+  position: absolute;
+  bottom: 14%;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 0.4rem 0.9rem;
+  border-radius: 999px;
+  background: rgba(0,0,0,0.55);
+  font-size: 0.95rem;
+}
+
+/* スイッチバック（11バック） */
+
+.event-switchback {
+  background: linear-gradient(135deg, rgba(26,26,46,0.8), rgba(67,97,238,0.75));
+  overflow: hidden;
+}
+
+.event-switchback-train {
+  position: absolute;
+  width: 140px;
+  height: 44px;
+  border-radius: 12px;
+  background: linear-gradient(90deg, #f5f5f7, #ffcc80);
+  box-shadow: 0 8px 18px rgba(0,0,0,0.5);
+  border: 3px solid rgba(0,0,0,0.25);
+  transform: translate(-40%, 40%) rotate(-18deg);
+  animation: switchback-train 1600ms ease-out forwards;
+}
+
+.event-switchback-train::before,
+.event-switchback-train::after {
+  content: '';
+  position: absolute;
+  inset: 6px 10px;
+  border-radius: 8px;
+  background: repeating-linear-gradient(
+    90deg,
+    rgba(26,26,46,0.9),
+    rgba(26,26,46,0.9) 14px,
+    rgba(255,255,255,0.5) 14px,
+    rgba(255,255,255,0.5) 18px
+  );
+}
+
+.event-switchback-train::after {
+  inset: auto 8px 4px 8px;
+  height: 9px;
+  border-radius: 999px;
+  background: #37474f;
+}
+
+@keyframes switchback-train {
+  0% {
+    transform: translate(-120%, 70%) rotate(-22deg);
+    opacity: 0;
+  }
+  25% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate(40%, -20%) rotate(-10deg);
+    opacity: 0;
+  }
+}
+
+/* 大涌谷の噴火（8切り） */
+
+.event-eruption {
+  background:
+    radial-gradient(circle at 50% 120%, rgba(0,0,0,0.85), transparent 60%),
+    radial-gradient(circle at 50% 70%, rgba(255,255,255,0.08), transparent 60%);
+  overflow: hidden;
+}
+
+.event-eruption::before {
+  content: '';
+  position: absolute;
+  left: -20%;
+  right: -20%;
+  bottom: -10%;
+  height: 70%;
+  background:
+    radial-gradient(circle at 50% 120%, #4e342e 0%, #212121 40%, transparent 70%);
+  opacity: 0.9;
+}
+
+.event-eruption::after {
+  content: '';
+  position: absolute;
+  left: -10%;
+  right: -10%;
+  bottom: 0;
+  top: 15%;
+  background:
+    repeating-linear-gradient(
+      0deg,
+      rgba(245,245,245,0.0),
+      rgba(245,245,245,0.0) 6px,
+      rgba(255,255,255,0.35) 6px,
+      rgba(255,255,255,0.05) 14px
+    );
+  filter: blur(2px);
+  animation: eruption-smoke 2000ms ease-out forwards;
+}
+
+@keyframes eruption-smoke {
+  0% {
+    transform: translateY(40px);
+    opacity: 0;
+  }
+  20% {
+    opacity: 0.9;
+  }
+  100% {
+    transform: translateY(-80px);
+    opacity: 0;
+  }
+}
+
+/* 天下の険（革命） */
+
+.event-tenkanoken {
+  background: radial-gradient(circle at 50% 0%, #ffe0b2, transparent 60%), #1a1a2e;
+  animation: tenkanoken-shake 900ms ease-in-out;
+}
+
+@keyframes tenkanoken-shake {
+  0% { transform: translateX(0) rotate(0deg); }
+  20% { transform: translateX(-6px) rotate(-1.2deg); }
+  40% { transform: translateX(6px) rotate(1.2deg); }
+  60% { transform: translateX(-4px) rotate(-0.8deg); }
+  80% { transform: translateX(4px) rotate(0.8deg); }
+  100% { transform: translateX(0) rotate(0deg); }
+}
+
+/* 旧街道の一里塚（階段） */
+
+.event-old-road {
+  background: linear-gradient(to bottom, rgba(0,0,0,0.75), rgba(0,0,0,0.4), rgba(0,0,0,0.75));
+}
+
+.event-old-road-path {
+  position: absolute;
+  left: -40%;
+  right: -40%;
+  height: 40%;
+  top: 50%;
+  transform: translateY(-50%) skewX(-12deg);
+  background:
+    repeating-linear-gradient(
+      90deg,
+      #6d4c41,
+      #6d4c41 40px,
+      #5d4037 40px,
+      #5d4037 60px
+    );
+  box-shadow:
+    0 0 0 2px rgba(33,33,33,0.6),
+    0 12px 18px rgba(0,0,0,0.6);
+  animation: old-road-scroll 1800ms linear forwards;
+}
+
+@keyframes old-road-scroll {
+  0%   { background-position-x: 0; opacity: 0; }
+  10%  { opacity: 1; }
+  100% { background-position-x: -160px; opacity: 0; }
+}
+
+/* 箱根関所（縛り） */
+
+.event-sekisho {
+  background: rgba(0,0,0,0.5);
+}
+
+.event-sekisho-gate {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 18%;
+  background:
+    repeating-linear-gradient(
+      90deg,
+      #3e2723,
+      #3e2723 32px,
+      #4e342e 32px,
+      #4e342e 52px
+    );
+  box-shadow: 0 4px 12px rgba(0,0,0,0.6);
+}
+
+.event-sekisho-gate-top {
+  top: -20%;
+  animation: sekisho-gate-top 500ms ease-out forwards;
+}
+
+.event-sekisho-gate-bottom {
+  bottom: -20%;
+  box-shadow: 0 -4px 12px rgba(0,0,0,0.6);
+  animation: sekisho-gate-bottom 500ms ease-out forwards;
+}
+
+@keyframes sekisho-gate-top {
+  0% { transform: translateY(0); }
+  70% { transform: translateY(120%); }
+  100% { transform: translateY(105%); }
+}
+
+@keyframes sekisho-gate-bottom {
+  0% { transform: translateY(0); }
+  70% { transform: translateY(-120%); }
+  100% { transform: translateY(-105%); }
+}
+
+.event-sekisho-bubble {
+  position: absolute;
+  max-width: 80%;
+  padding: 0.75rem 1.1rem;
+  border-radius: 12px;
+  background: #fffbe6;
+  color: #3e2723;
+  font-weight: 700;
+  font-size: 0.9rem;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.4);
+  text-align: center;
+  animation: sekisho-bubble 1500ms ease-out forwards;
+}
+
+@keyframes sekisho-bubble {
+  0% { transform: translateY(20px); opacity: 0; }
+  20% { transform: translateY(0); opacity: 1; }
+  100% { transform: translateY(-10px); opacity: 0; }
+}
+
+/* イナバウワー（手札公開） */
+
+.event-inabauwa {
+  background: radial-gradient(circle at 50% 0%, #bbdefb, transparent 60%), #0d47a1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.event-inabauwa-hand {
+  position: relative;
+  width: 200px;
+  height: 90px;
+  perspective: 600px;
+}
+
+.event-inabauwa-card-base,
+.event-inabauwa-card-bend {
+  position: absolute;
+  top: 8px;
+  width: 60px;
+  height: 86px;
+  border-radius: 10px;
+  background: repeating-linear-gradient(
+    45deg,
+    #1a1a2e,
+    #1a1a2e 5px,
+    #3949ab 5px,
+    #3949ab 10px
+  );
+  border: 2px solid rgba(255,255,255,0.8);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.6);
+}
+
+.event-inabauwa-card-base {
+  left: 0;
+  transform: rotateZ(-8deg);
+  opacity: 0.7;
+}
+
+.event-inabauwa-card-bend {
+  left: 40px;
+  transform-origin: bottom center;
+  animation: inabauwa-bend 1200ms ease-out forwards;
+}
+
+@keyframes inabauwa-bend {
+  0% {
+    transform: rotateZ(6deg) rotateX(0deg) translateY(0);
+  }
+  30% {
+    transform: rotateZ(0deg) rotateX(-35deg) translateY(-6px);
+  }
+  70% {
+    transform: rotateZ(4deg) rotateX(-45deg) translateY(-12px);
+  }
+  100% {
+    transform: rotateZ(4deg) rotateX(-35deg) translateY(-8px);
+  }
+}
