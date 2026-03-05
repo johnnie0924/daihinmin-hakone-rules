@@ -10,6 +10,7 @@ import { useAutoCollapsePeerSection } from './hooks/useAutoCollapsePeerSection'
 import { useResetGameOnDisconnect } from './hooks/useResetGameOnDisconnect'
 import { DEFAULT_GAME_CONFIG } from './hooks/useGameEngine'
 import { pickRandomNickname } from './data/defaultNicknames'
+import type { NpcConfig } from './types/game'
 import './App.css'
 
 function App() {
@@ -23,6 +24,11 @@ function App() {
   const [enableTenkanoken, setEnableTenkanoken] = useState(DEFAULT_GAME_CONFIG.enableTenkanoken)
   const [enableOldRoad, setEnableOldRoad] = useState(DEFAULT_GAME_CONFIG.enableOldRoad)
   const [enableSekisho, setEnableSekisho] = useState(DEFAULT_GAME_CONFIG.enableSekisho)
+  const [fillWithNpc, setFillWithNpc] = useState(false)
+  const [npcConfigs, setNpcConfigs] = useState<NpcConfig[]>([
+    { id: 'npc-1', nickname: '箱根トラベラー', strategy: 'balanced', enabled: true },
+    { id: 'npc-2', nickname: '山の番人', strategy: 'aggressive', enabled: false },
+  ])
 
   const gameConfig = {
     roundsPerGame,
@@ -57,6 +63,9 @@ function App() {
     connectedPeers,
     sendGameData,
     initialConfig: gameConfig,
+    npcConfigs: fillWithNpc
+      ? npcConfigs
+      : npcConfigs.map((c) => ({ ...c, enabled: false })),
   })
 
   const nicknameValid = nickname.trim().length > 0
@@ -147,6 +156,10 @@ function App() {
           onChangeEnableOldRoad={setEnableOldRoad}
           enableSekisho={enableSekisho}
           onChangeEnableSekisho={setEnableSekisho}
+          npcConfigs={npcConfigs}
+          onChangeNpcConfigs={setNpcConfigs}
+          fillWithNpc={fillWithNpc}
+          onChangeFillWithNpc={setFillWithNpc}
           disabled={game.gameState != null}
         />
       )}

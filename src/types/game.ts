@@ -9,6 +9,15 @@ export type Card = {
 
 export type HandKind = 'single' | 'pair' | 'triple' | 'stair'
 
+export type NpcStrategy = 'balanced' | 'aggressive' | 'random'
+
+export type NpcConfig = {
+  id: string
+  nickname: string
+  strategy: NpcStrategy
+  enabled: boolean
+}
+
 export type SpecialEvent =
   | 'none'
   | 'switchback'   // 11バック
@@ -40,6 +49,8 @@ export type FullPlayerState = {
   hand: Card[]
   handCount: number
   passedThisTrick: boolean
+  isNpc: boolean
+  npcStrategy?: NpcStrategy
 }
 
 export type ClientPlayerState = {
@@ -48,6 +59,8 @@ export type ClientPlayerState = {
   hand: Card[]
   handCount: number
   passedThisTrick: boolean
+  isNpc: boolean
+  npcStrategy?: NpcStrategy
 }
 
 export type GamePhase = 'waiting' | 'playing' | 'roundEnd' | 'gameEnd'

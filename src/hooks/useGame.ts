@@ -1,7 +1,13 @@
 import { useState, useCallback, useRef, useEffect } from 'react'
 import type { PeerRole } from './usePeerChat'
 import type {
-  Card, ClientGameState, FullGameState, GameAction, WireGameData, GameConfig,
+  Card,
+  ClientGameState,
+  FullGameState,
+  GameAction,
+  WireGameData,
+  GameConfig,
+  NpcConfig,
 } from '../types/game'
 import {
   createInitialGameState,
@@ -10,6 +16,7 @@ import {
   toClientGameState,
   DEFAULT_GAME_CONFIG,
 } from './useGameEngine'
+import { chooseNpcAction } from '../logic/npc'
 
 type ConnectedPeer = { peerId: string; nickname: string }
 
@@ -20,6 +27,7 @@ type Props = {
   connectedPeers: ConnectedPeer[]
   sendGameData: (toPeerId: string | 'all', data: WireGameData) => void
   initialConfig?: GameConfig
+  npcConfigs?: NpcConfig[]
 }
 
 export type RevealInfo = {
@@ -28,7 +36,15 @@ export type RevealInfo = {
   targetPeerId: string
 }
 
-export function useGame({ role, myPeerId, myNickname, connectedPeers, sendGameData, initialConfig }: Props) {
+export function useGame({
+  role,
+  myPeerId,
+  myNickname,
+  connectedPeers,
+  sendGameData,
+  initialConfig,
+  npcConfigs,
+}: Props) {
   const [gameState, setGameState] = useState<ClientGameState | null>(null)
   const [revealInfo, setRevealInfo] = useState<RevealInfo | null>(null)
   const [gameError, setGameError] = useState<string | null>(null)
@@ -39,12 +55,46 @@ export function useGame({ role, myPeerId, myNickname, connectedPeers, sendGameDa
   const continueVotesRef = useRef<Set<string>>(new Set())
   // 現在のゲーム設定（ホストのみ使用、クライアントは受信stateのconfigを見る）
   const configRef = useRef<GameConfig | null>(null)
+  // NPCの設定（ホストのみ使用）
+  const npcConfigsRef = useRef<NpcConfig[] | null>(null)
+  // NPCターン実行の多重防止キー
+  const npcTurnKeyRef = useRef<string | null>(null)
 
   useEffect(() => {
     if (initialConfig) {
       configRef.current = initialConfig
     }
   }, [initialConfig])
+
+  useEffect(() => {
+    npcConfigsRef.current = npcConfigs ?? null
+  }, [npcConfigs])
+
+  const buildPlayersWithNpc = useCallback(() => {
+    const humanPlayers = [
+      { peerId: myPeerId, nickname: myNickname },
+      ...connectedPeers,
+    ]
+
+    const maxSlots = 3
+    const availableSlots = Math.max(0, maxSlots - humanPlayers.length)
+
+    const configs = npcConfigsRef.current ?? []
+    const npcPlayers = configs
+      .filter((c) => c.enabled)
+      .slice(0, availableSlots)
+      .map((cfg) => ({
+        peerId: cfg.id,
+        nickname: cfg.nickname,
+        isNpc: true as const,
+        npcStrategy: cfg.strategy,
+      }))
+
+    return {
+      humanPlayers,
+      allPlayers: [...humanPlayers, ...npcPlayers],
+    }
+  }, [myPeerId, myNickname, connectedPeers])
 
   // エラーを出したプレイヤーにのみ通知（ホストはローカル、クライアントは送信）
   const reportError = useCallback(
@@ -143,10 +193,7 @@ export function useGame({ role, myPeerId, myNickname, connectedPeers, sendGameDa
         const allPlayerIds = new Set([myPeerId, ...connectedPeers.map((p) => p.peerId)])
         if (continueVotesRef.current.size >= allPlayerIds.size && [...continueVotesRef.current].every((id) => allPlayerIds.has(id))) {
           continueVotesRef.current.clear()
-          const allPlayers: ConnectedPeer[] = [
-            { peerId: myPeerId, nickname: myNickname },
-            ...connectedPeers,
-          ]
+          const { allPlayers } = buildPlayersWithNpc()
           if (allPlayers.length >= 2) {
             const initial = createInitialGameState(
               allPlayers,
@@ -158,7 +205,7 @@ export function useGame({ role, myPeerId, myNickname, connectedPeers, sendGameDa
         return
       }
     },
-    [role, broadcastState, sendGameData, myPeerId, reportError, connectedPeers, myNickname]
+    [role, broadcastState, sendGameData, myPeerId, reportError, connectedPeers, myNickname, buildPlayersWithNpc]
   )
 
   // ────────── 受信ハンドラ（usePeerChat から呼ばれる） ──────────
@@ -194,17 +241,14 @@ export function useGame({ role, myPeerId, myNickname, connectedPeers, sendGameDa
 
   const startGame = useCallback(() => {
     if (role !== 'host') return
-    const allPlayers: ConnectedPeer[] = [
-      { peerId: myPeerId, nickname: myNickname },
-      ...connectedPeers,
-    ]
+    const { allPlayers } = buildPlayersWithNpc()
     if (allPlayers.length < 2) return
     const initial = createInitialGameState(
       allPlayers,
       configRef.current ?? DEFAULT_GAME_CONFIG,
     )
     broadcastState(initial)
-  }, [role, myPeerId, myNickname, connectedPeers, broadcastState])
+  }, [role, buildPlayersWithNpc, broadcastState])
 
   const playCards = useCallback(
     (cards: Card[]) => {
@@ -268,6 +312,36 @@ export function useGame({ role, myPeerId, myNickname, connectedPeers, sendGameDa
       sendGameData('all', { type: 'game:action', action })
     }
   }, [role, myPeerId, processAction, sendGameData])
+
+  // ────────── ホスト: NPCターンの自動実行 ──────────
+
+  useEffect(() => {
+    if (role !== 'host') return
+    const full = fullStateRef.current
+    if (!full || full.phase !== 'playing') {
+      npcTurnKeyRef.current = null
+      return
+    }
+    const current = full.players[full.currentPlayerIndex]
+    if (!current.isNpc || !current.npcStrategy) return
+
+    const key = `${full.round}-${full.currentPlayerIndex}-${full.field.length}-${full.deck.length}`
+    if (npcTurnKeyRef.current === key) return
+    npcTurnKeyRef.current = key
+
+    const timer = window.setTimeout(() => {
+      const latest = fullStateRef.current
+      if (!latest || latest.phase !== 'playing') return
+      const cur = latest.players[latest.currentPlayerIndex]
+      if (!cur.isNpc || !cur.npcStrategy) return
+      const action = chooseNpcAction(latest, cur.peerId, cur.npcStrategy)
+      processAction(cur.peerId, action)
+    }, 600)
+
+    return () => {
+      window.clearTimeout(timer)
+    }
+  }, [role, gameState?.phase, gameState?.currentPlayerIndex, processAction])
 
   return {
     gameState,

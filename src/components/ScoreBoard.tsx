@@ -65,9 +65,12 @@ export default function ScoreBoard({ gameState, onNextRound, onLeave, onContinue
               const arr = roundScores[p.peerId] ?? []
               const total = gameState.scores[p.peerId] ?? 0
               const diff = total - minTotal
+              const baseName =
+                p.peerId === gameState.myPeerId ? `${p.nickname}（自分）` : p.nickname
+              const displayName = p.isNpc ? `${baseName}（CPU）` : baseName
               return (
                 <tr key={p.peerId} className={p.peerId === gameState.myPeerId ? 'scoreboard-self' : ''}>
-                  <td>{p.peerId === gameState.myPeerId ? `${p.nickname}（自分）` : p.nickname}</td>
+                  <td>{displayName}</td>
                   {Array.from({ length: totalRounds }, (_, i) => (
                     <td key={i}>
                       {i < arr.length ? arr[i] : '-'}

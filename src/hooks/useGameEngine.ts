@@ -1,6 +1,16 @@
 import type {
-  Card, Suit, Rank, HandKind, FieldEntry,
-  FullGameState, FullPlayerState, ClientGameState, SpecialEvent, GameConfig,
+  Card,
+  Suit,
+  Rank,
+  HandKind,
+  FieldEntry,
+  FullGameState,
+  FullPlayerState,
+  ClientGameState,
+  SpecialEvent,
+  GameConfig,
+  NpcStrategy,
+  ClientPlayerState,
 } from '../types/game'
 
 // ────────── デッキ生成・シャッフル ──────────
@@ -220,8 +230,15 @@ export function handScore(hand: Card[]): number {
 
 // ────────── ゲーム状態の初期化 ──────────
 
+type InitialPlayer = {
+  peerId: string
+  nickname: string
+  isNpc?: boolean
+  npcStrategy?: NpcStrategy
+}
+
 export function createInitialGameState(
-  players: { peerId: string; nickname: string }[],
+  players: InitialPlayer[],
   config: GameConfig = DEFAULT_GAME_CONFIG,
 ): FullGameState {
   const deck = shuffle(createDeck())
@@ -236,12 +253,14 @@ export function createInitialGameState(
     currentPlayerIndex: parentIndex,
     parentIndex,
     field: [],
-    players: players.map((p, i) => ({
+    players: players.map((p, i): FullPlayerState => ({
       peerId: p.peerId,
       nickname: p.nickname,
       hand: hands[i],
       handCount: hands[i].length,
       passedThisTrick: false,
+      isNpc: !!p.isNpc,
+      npcStrategy: p.npcStrategy,
     })),
     deck: remainingDeck,
     revolution: false,
@@ -519,13 +538,17 @@ export function toClientGameState(state: FullGameState, forPeerId: string): Clie
     currentPlayerIndex: state.currentPlayerIndex,
     parentIndex: state.parentIndex,
     field: state.field,
-    players: state.players.map(p => ({
-      peerId: p.peerId,
-      nickname: p.nickname,
-      hand: p.peerId === forPeerId ? p.hand : [],
-      handCount: p.handCount,
-      passedThisTrick: p.passedThisTrick,
-    })),
+    players: state.players.map(
+      (p): ClientPlayerState => ({
+        peerId: p.peerId,
+        nickname: p.nickname,
+        hand: p.peerId === forPeerId ? p.hand : [],
+        handCount: p.handCount,
+        passedThisTrick: p.passedThisTrick,
+        isNpc: p.isNpc,
+        npcStrategy: p.npcStrategy,
+      }),
+    ),
     deckCount: state.deck.length,
     revolution: state.revolution,
     elevenBack: state.elevenBack,

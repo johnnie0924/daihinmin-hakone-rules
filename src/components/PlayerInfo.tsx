@@ -14,6 +14,7 @@ export default function PlayerInfo({ player, isCurrentPlayer, isSelf, score, onI
     <div className={`player-info ${isCurrentPlayer ? 'player-info-active' : ''} ${isSelf ? 'player-info-self' : ''}`}>
       <span className="player-name">
         {isSelf ? '自分' : player.nickname}
+        {player.isNpc && '（CPU）'}
         {isCurrentPlayer && ' 🎯'}
         {player.passedThisTrick && ' (パス)'}
       </span>
