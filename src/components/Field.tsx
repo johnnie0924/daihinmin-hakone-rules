@@ -7,14 +7,12 @@ const SUIT_SYMBOL: Record<Suit, string> = {
 
 type Props = {
   field: FieldEntry[]
-  revolution: boolean
-  elevenBack: boolean
   suitLock: Suit | null
   deckCount: number
   playerNickname: (peerId: string) => string
 }
 
-export default function Field({ field, revolution, elevenBack, suitLock, deckCount, playerNickname }: Props) {
+export default function Field({ field, suitLock, deckCount, playerNickname }: Props) {
   const top = field.length > 0 ? field[field.length - 1] : null
 
   return (

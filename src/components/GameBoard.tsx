@@ -335,8 +335,6 @@ export default function GameBoard({
       {/* 場 */}
       <Field
         field={gameState.field}
-        revolution={gameState.revolution}
-        elevenBack={gameState.elevenBack}
         suitLock={gameState.suitLock}
         deckCount={gameState.deckCount}
         playerNickname={playerNickname}
