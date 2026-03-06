@@ -19,7 +19,7 @@ type Props = {
   playerNickname: (peerId: string) => string
 }
 
-export default function Field({ field, suitLock, deckCount, playerNickname }: Props) {
+export default function Field({ field, suitLock, deckCount, playerNickname: _playerNickname }: Props) {
   const len = field.length
   const top = len > 0 ? field[len - 1] : null
   const historyEntries = len === 0 ? [] : field.slice(-3).reverse()
