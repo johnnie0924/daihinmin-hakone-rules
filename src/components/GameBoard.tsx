@@ -123,7 +123,7 @@ export default function GameBoard({
     }
     const fieldTop =
       gameState.field.length > 0 ? gameState.field[gameState.field.length - 1] : null
-    if (!canPlay(analysis, fieldTop, gameState.suitLock)) {
+    if (!canPlay(analysis, fieldTop, gameState.suitLock, effectiveRev)) {
       return {
         canPlay: false,
         kindLabel: undefined,

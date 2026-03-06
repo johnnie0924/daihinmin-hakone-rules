@@ -325,7 +325,8 @@ export function useGame({
     const current = full.players[full.currentPlayerIndex]
     if (!current.isNpc || !current.npcStrategy) return
 
-    const key = `${full.round}-${full.currentPlayerIndex}-${full.field.length}-${full.deck.length}`
+    // 8切り・革命・11バック等で「同じ手番が続く」場合に、イベントごとでキーを変えて再スケジュールする
+    const key = `${full.round}-${full.currentPlayerIndex}-${full.field.length}-${full.deck.length}-${full.lastEvent}-${full.pendingDraw?.cardId ?? ''}`
     if (npcTurnKeyRef.current === key) return
     npcTurnKeyRef.current = key
 

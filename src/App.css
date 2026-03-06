@@ -630,6 +630,48 @@
   gap: 0.35rem;
 }
 
+.field-history {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.field-history-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 0;
+}
+
+.field-history-arrow {
+  padding: 0 0.4rem;
+  color: #666;
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+
+.field-history-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-width: 0;
+}
+
+.field-history-kind {
+  font-size: 0.7rem;
+  color: #666;
+}
+
+.field-history-item--old .field-cards {
+  transform: scale(0.7);
+  transform-origin: left center;
+}
+
+.field-history-item--old .field-history-kind {
+  font-size: 0.65rem;
+}
+
 .field-player-label {
   font-size: 0.78rem;
   color: #555;

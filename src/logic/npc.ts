@@ -47,7 +47,7 @@ function collectCandidates(state: FullGameState, playerId: string): Candidate[] 
     }
     const analysis = analyzeHand(cards, effectiveRev)
     if (!analysis || !analysis.valid) continue
-    if (!canPlay(analysis, fieldTop, state.suitLock)) continue
+    if (!canPlay(analysis, fieldTop, state.suitLock, effectiveRev)) continue
     result.push({
       cards,
       strength: analysis.strength,

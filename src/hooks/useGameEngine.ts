@@ -176,17 +176,21 @@ function tryStair(
 }
 
 // ────────── プレイ可否チェック ──────────
+// currentRev: 現在の effectiveRev (revolution !== elevenBack)。場トップの強さを「今の強さ順」で再計算して比較するために使用。
 
 export function canPlay(
   played: HandAnalysis,
   fieldTop: FieldEntry | null,
   suitLock: Suit | null,
+  currentRev: boolean,
 ): boolean {
   if (!fieldTop) return true
   if (played.kind !== fieldTop.kind) return false
 
-  // 階段は枚数も同じでなければならない（strengthで区別）
-  if (played.strength <= fieldTop.strength) return false
+  // 11バック・革命の切り替わり後も正しく判定するため、場トップの強さを現在の rev で再計算する
+  const fieldAnalysis = analyzeHand(fieldTop.cards, currentRev)
+  const fieldStrength = fieldAnalysis?.strength ?? fieldTop.strength
+  if (played.strength <= fieldStrength) return false
 
   if (suitLock) {
     // ジョーカーのみの手はスートロックを通過
@@ -355,7 +359,7 @@ export function applyPlay(
   if (!analysis || !analysis.valid) return { error: '無効な手です' }
 
   const fieldTop = state.field.length > 0 ? state.field[state.field.length - 1] : null
-  if (!canPlay(analysis, fieldTop, state.suitLock)) return { error: 'その手は出せません' }
+  if (!canPlay(analysis, fieldTop, state.suitLock, effectiveRev)) return { error: 'その手は出せません' }
 
   const player = state.players[playerIdx]
   const cardIdSet = new Set(cards.map(c => c.id))
