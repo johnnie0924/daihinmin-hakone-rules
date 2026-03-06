@@ -242,7 +242,7 @@ export function useGame({
   const startGame = useCallback(() => {
     if (role !== 'host') return
     const { allPlayers } = buildPlayersWithNpc()
-    if (allPlayers.length < 2) return
+    if (allPlayers.length < 3) return
     const initial = createInitialGameState(
       allPlayers,
       configRef.current ?? DEFAULT_GAME_CONFIG,

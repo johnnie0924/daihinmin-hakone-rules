@@ -273,6 +273,49 @@ export function createInitialGameState(
     consecutivePasses: 0,
     lastEvent: 'none',
     config,
+    pendingDraw: null,
+  }
+}
+
+function finalizePass(
+  state: FullGameState,
+  players: FullPlayerState[],
+  deck: Card[],
+  playerIdx: number,
+): FullGameState {
+  const activePlayers = players.filter(p => !p.passedThisTrick)
+  const trickOver = activePlayers.length <= 1
+
+  let newField = state.field
+  let newSuitLock = state.suitLock
+  let newElevenBack = state.elevenBack
+  let newParentIndex = state.parentIndex
+  let nextIdx = nextPlayer(players, playerIdx)
+
+  if (trickOver) {
+    newField = []
+    newSuitLock = null
+    newElevenBack = false
+    if (state.field.length > 0) {
+      const lastPlayerId = state.field[state.field.length - 1].playerId
+      const lastPlayerIdx = players.findIndex(p => p.peerId === lastPlayerId)
+      newParentIndex = lastPlayerIdx >= 0 ? lastPlayerIdx : state.parentIndex
+    }
+    nextIdx = newParentIndex
+  }
+
+  return {
+    ...state,
+    deck,
+    players: trickOver ? players.map(p => ({ ...p, passedThisTrick: false })) : players,
+    field: newField,
+    suitLock: newSuitLock,
+    elevenBack: newElevenBack,
+    parentIndex: newParentIndex,
+    currentPlayerIndex: nextIdx,
+    consecutivePasses: trickOver ? 0 : state.consecutivePasses + 1,
+    lastEvent: 'none',
+    pendingDraw: null,
   }
 }
 
@@ -298,6 +341,14 @@ export function applyPlay(
 ): FullGameState | { error: string } {
   const playerIdx = state.players.findIndex(p => p.peerId === playerId)
   if (playerIdx !== state.currentPlayerIndex) return { error: '自分のターンではありません' }
+
+  const pending = state.pendingDraw
+  if (pending && pending.playerId === playerId) {
+    const includesDrawn = cards.some(c => c.id === pending.cardId)
+    if (!includesDrawn) {
+      return { error: 'さっき引いたカードを含めてください' }
+    }
+  }
 
   const effectiveRev = state.revolution !== state.elevenBack
   const analysis = analyzeHand(cards, effectiveRev)
@@ -391,6 +442,7 @@ export function applyPlay(
     consecutivePasses: 0,
     roundWinner,
     lastEvent: newLastEvent,
+    pendingDraw: null,
   }
 }
 
@@ -401,6 +453,14 @@ export function applyPass(
   const playerIdx = state.players.findIndex(p => p.peerId === playerId)
   if (playerIdx !== state.currentPlayerIndex) return { error: '自分のターンではありません' }
 
+  // ドロー直後の pendingDraw 中にもう一度パスした場合は「確定パス」として処理する
+  if (state.pendingDraw && state.pendingDraw.playerId === playerId) {
+    const newPlayers: FullPlayerState[] = state.players.map((p, i) =>
+      i === playerIdx ? { ...p, passedThisTrick: true } : p,
+    )
+    return finalizePass(state, newPlayers, state.deck, playerIdx)
+  }
+
   let newDeck = [...state.deck]
   let drawnCard: Card | null = null
   if (newDeck.length > 0) {
@@ -408,44 +468,27 @@ export function applyPass(
     newDeck = newDeck.slice(1)
   }
 
-  const newPlayers: FullPlayerState[] = state.players.map((p, i) => {
-    if (i !== playerIdx) return p
-    const newHand = drawnCard ? [...p.hand, drawnCard] : p.hand
-    return { ...p, hand: newHand, handCount: newHand.length, passedThisTrick: true }
-  })
-
-  const activePlayers = newPlayers.filter(p => !p.passedThisTrick)
-  const trickOver = activePlayers.length <= 1
-
-  let newField = state.field
-  let newSuitLock = state.suitLock
-  let newElevenBack = state.elevenBack
-  let newParentIndex = state.parentIndex
-  let nextIdx = nextPlayer(newPlayers, playerIdx)
-
-  if (trickOver) {
-    newField = []
-    newSuitLock = null
-    newElevenBack = false
-    // 最後に出したプレイヤーが次の親
-    if (state.field.length > 0) {
-      const lastPlayerId = state.field[state.field.length - 1].playerId
-      const lastPlayerIdx = newPlayers.findIndex(p => p.peerId === lastPlayerId)
-      newParentIndex = lastPlayerIdx >= 0 ? lastPlayerIdx : state.parentIndex
-    }
-    nextIdx = newParentIndex
+  // 山札が空：従来通りの単純なパス
+  if (!drawnCard) {
+    const newPlayers: FullPlayerState[] = state.players.map((p, i) =>
+      i === playerIdx ? { ...p, passedThisTrick: true } : p,
+    )
+    return finalizePass(state, newPlayers, newDeck, playerIdx)
   }
+
+  // 山札から1枚引いて、ドロー直後の特別一手モードに入る
+  const newPlayersWithDraw: FullPlayerState[] = state.players.map((p, i) => {
+    if (i !== playerIdx) return p
+    const newHand = [...p.hand, drawnCard!]
+    return { ...p, hand: newHand, handCount: newHand.length }
+  })
 
   return {
     ...state,
     deck: newDeck,
-    players: trickOver ? newPlayers.map(p => ({ ...p, passedThisTrick: false })) : newPlayers,
-    field: newField,
-    suitLock: newSuitLock,
-    elevenBack: newElevenBack,
-    parentIndex: newParentIndex,
-    currentPlayerIndex: nextIdx,
-    consecutivePasses: trickOver ? 0 : state.consecutivePasses + 1,
+    players: newPlayersWithDraw,
+    // ターンは同じプレイヤーが継続し、passedThisTrick や consecutivePasses はまだ更新しない
+    pendingDraw: { playerId, cardId: drawnCard.id },
     lastEvent: 'none',
   }
 }
@@ -495,6 +538,7 @@ export function finalizeRound(state: FullGameState): FullGameState {
     roundScores: newRoundScores,
     phase: isLastRound ? 'gameEnd' : 'roundEnd',
     lastEvent: 'none',
+    pendingDraw: null,
   }
 }
 
@@ -526,6 +570,7 @@ export function startNextRound(state: FullGameState): FullGameState {
     roundWinner: null,
     consecutivePasses: 0,
     lastEvent: 'none',
+    pendingDraw: null,
   }
 }
 
@@ -560,6 +605,10 @@ export function toClientGameState(state: FullGameState, forPeerId: string): Clie
     consecutivePasses: state.consecutivePasses,
     lastEvent: state.lastEvent,
     config: state.config,
+    pendingDrawForMeCardId:
+      state.pendingDraw && state.pendingDraw.playerId === forPeerId
+        ? state.pendingDraw.cardId
+        : null,
     myPeerId: forPeerId,
   }
 }

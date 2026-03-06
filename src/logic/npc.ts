@@ -35,9 +35,16 @@ function collectCandidates(state: FullGameState, playerId: string): Candidate[] 
   const effectiveRev = state.revolution !== state.elevenBack
   const fieldTop = state.field.length > 0 ? state.field[state.field.length - 1] : null
 
+  const pending = state.pendingDraw
+  const requiredCardId =
+    pending && pending.playerId === playerId ? pending.cardId : null
+
   const result: Candidate[] = []
 
   for (const cards of combinations(player.hand, MAX_COMBINATION_SIZE)) {
+    if (requiredCardId && !cards.some((c) => c.id === requiredCardId)) {
+      continue
+    }
     const analysis = analyzeHand(cards, effectiveRev)
     if (!analysis || !analysis.valid) continue
     if (!canPlay(analysis, fieldTop, state.suitLock)) continue
@@ -57,30 +64,6 @@ export function chooseNpcAction(
   strategy: NpcStrategy,
 ): GameAction {
   const candidates = collectCandidates(state, playerId)
-
-  // #region agent log
-  fetch('http://127.0.0.1:7247/ingest/0cf27e85-b46d-496f-b8be-1cfdc250cc45', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-Debug-Session-Id': 'd14ffc',
-    },
-    body: JSON.stringify({
-      sessionId: 'd14ffc',
-      runId: 'build-fix-1',
-      hypothesisId: 'H1',
-      location: 'src/logic/npc.ts:chooseNpcAction',
-      message: 'NPC candidates after collection',
-      data: {
-        playerId,
-        strategy,
-        candidateCount: candidates.length,
-      },
-      timestamp: Date.now(),
-    }),
-  }).catch(() => {})
-  // #endregion agent log
-
   if (candidates.length === 0) {
     return { kind: 'pass' }
   }

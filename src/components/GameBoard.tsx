@@ -88,6 +88,8 @@ export default function GameBoard({
   const currentPlayer = gameState.players[gameState.currentPlayerIndex]
   const isMyTurn = currentPlayer?.peerId === gameState.myPeerId
   const parentPlayer = gameState.players[gameState.parentIndex]
+  const isAfterDrawMode =
+    isMyTurn && gameState.pendingDrawForMeCardId != null
 
   const lastField = gameState.field.length > 0 ? gameState.field[gameState.field.length - 1] : null
   const eventPlayer =
@@ -129,6 +131,19 @@ export default function GameBoard({
         type: 'negative' as const,
       }
     }
+
+    if (
+      isAfterDrawMode &&
+      gameState.pendingDrawForMeCardId &&
+      !selectedCards.some((c) => c.id === gameState.pendingDrawForMeCardId)
+    ) {
+      return {
+        canPlay: false,
+        kindLabel: undefined,
+        message: 'さっき引いたカードを含めてください',
+        type: 'negative' as const,
+      }
+    }
     const kindLabel = HAND_KIND_LABEL[analysis.kind] ?? '有効な手'
     if (!ENABLE_POSITIVE_HINT) {
       return {
@@ -151,6 +166,8 @@ export default function GameBoard({
     gameState.revolution,
     gameState.elevenBack,
     gameState.suitLock,
+    gameState.pendingDrawForMeCardId,
+    isAfterDrawMode,
   ])
 
   const inabauwaAvailable =
@@ -368,6 +385,8 @@ export default function GameBoard({
           validationType={playValidation.type}
           shortcutsEnabled={shortcutsEnabled}
           onSelectionChange={setSelectedCards}
+          afterDrawMode={isAfterDrawMode}
+          drawnCardId={gameState.pendingDrawForMeCardId ?? undefined}
         />
       </div>
     </div>

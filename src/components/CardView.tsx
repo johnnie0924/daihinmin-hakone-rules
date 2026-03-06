@@ -22,12 +22,14 @@ type Props = {
   onClick?: () => void
   faceDown?: boolean
   small?: boolean
+  highlighted?: boolean
 }
 
-export default function CardView({ card, selected, onClick, faceDown, small }: Props) {
+export default function CardView({ card, selected, onClick, faceDown, small, highlighted }: Props) {
   const sizeClass = small ? 'card-small' : 'card-normal'
   const selectedClass = selected ? 'card-selected' : ''
   const clickableClass = onClick ? 'card-clickable' : ''
+  const highlightClass = highlighted ? 'card-drawn-highlight' : ''
 
   if (faceDown) {
     return (
@@ -40,7 +42,7 @@ export default function CardView({ card, selected, onClick, faceDown, small }: P
   if (card.rank === 'joker') {
     return (
       <div
-        className={`card card-joker ${sizeClass} ${selectedClass} ${clickableClass}`}
+        className={`card card-joker ${sizeClass} ${selectedClass} ${clickableClass} ${highlightClass}`}
         onClick={onClick}
       >
         <span className="card-corner card-corner-tl">JK</span>
@@ -58,7 +60,7 @@ export default function CardView({ card, selected, onClick, faceDown, small }: P
 
   return (
     <div
-      className={`card ${colorClass} ${sizeClass} ${selectedClass} ${clickableClass}`}
+      className={`card ${colorClass} ${sizeClass} ${selectedClass} ${clickableClass} ${highlightClass}`}
       onClick={onClick}
     >
       <span className="card-corner card-corner-tl">

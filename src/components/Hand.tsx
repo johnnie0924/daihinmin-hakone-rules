@@ -19,6 +19,8 @@ type Props = {
   validationType?: 'positive' | 'negative' | 'none'
   onSelectionChange?: (selected: Card[]) => void
   shortcutsEnabled?: boolean
+  afterDrawMode?: boolean
+  drawnCardId?: string
 }
 
 const ENABLE_SHORTCUTS = true
@@ -39,6 +41,8 @@ export default function Hand({
   validationType = 'none',
   onSelectionChange,
   shortcutsEnabled = true,
+  afterDrawMode = false,
+  drawnCardId,
 }: Props) {
   const [selected, setSelected] = useState<Set<string>>(new Set())
   const [isSorted, setIsSorted] = useState(false)
@@ -178,6 +182,7 @@ export default function Hand({
             card={card}
             selected={selected.has(card.id)}
             onClick={() => toggleCard(card.id)}
+            highlighted={afterDrawMode && drawnCardId === card.id}
           />
         ))}
       </div>
@@ -205,6 +210,11 @@ export default function Hand({
           <p className="hand-shortcut-hint">
             ショートカット: Enter = 出す / P = パス / I = イナバウワー
           </p>
+          {afterDrawMode && (
+            <p className="hand-after-draw-hint">
+              さっき引いたカードを含む手なら、このターン中に出せます
+            </p>
+          )}
         </>
       )}
       {isMyTurn && !disabled && validationMessage && selectedCards.length > 0 && (

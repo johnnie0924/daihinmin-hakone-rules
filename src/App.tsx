@@ -70,6 +70,12 @@ function App() {
 
   const nicknameValid = nickname.trim().length > 0
 
+  const enabledNpcCount = fillWithNpc
+    ? npcConfigs.filter((c) => c.enabled).length
+    : 0
+  const plannedPlayerCount = 1 + connectionCount + enabledNpcCount
+  const canStartGameAsHost = role === 'host' && plannedPlayerCount >= 3
+
   // ゲームデータハンドラを登録
   useEffect(() => {
     setGameDataHandler(game.handleGameData)
@@ -204,6 +210,8 @@ function App() {
         <GameTab
           role={role}
           connectionCount={connectionCount}
+          plannedPlayerCount={plannedPlayerCount}
+          canStartGame={canStartGameAsHost}
           gameState={game.gameState}
           revealInfo={game.revealInfo}
           gameError={game.gameError}

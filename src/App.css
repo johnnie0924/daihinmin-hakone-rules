@@ -729,6 +729,12 @@
   color: #777;
 }
 
+.hand-after-draw-hint {
+  margin-top: 0.15rem;
+  font-size: 0.8rem;
+  color: #f8b400;
+}
+
 .btn-play {
   padding: 0.5rem 1rem;
   background: #1a1a2e;
@@ -806,6 +812,26 @@
   transform: translateY(-10px);
   box-shadow: 0 6px 16px rgba(26,26,46,0.35);
   border-color: #1a1a2e;
+}
+
+.card-drawn-highlight {
+  box-shadow: 0 0 0 2px #f8b400, 0 6px 18px rgba(0,0,0,0.35);
+}
+
+@keyframes card-drawn-pulse {
+  0% {
+    transform: translateY(-2px) scale(1);
+  }
+  50% {
+    transform: translateY(-4px) scale(1.03);
+  }
+  100% {
+    transform: translateY(-2px) scale(1);
+  }
+}
+
+.card-drawn-highlight.card-clickable:hover {
+  animation: card-drawn-pulse 800ms ease-out 0s 2;
 }
 
 .card-red { color: #c62828; }

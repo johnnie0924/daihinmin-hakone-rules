@@ -18,6 +18,11 @@ export type NpcConfig = {
   enabled: boolean
 }
 
+export type PendingDraw = {
+  playerId: string
+  cardId: string
+}
+
 export type SpecialEvent =
   | 'none'
   | 'switchback'   // 11バック
@@ -83,6 +88,7 @@ export type FullGameState = {
   consecutivePasses: number
   lastEvent: SpecialEvent
   config: GameConfig
+  pendingDraw: PendingDraw | null
 }
 
 export type ClientGameState = {
@@ -104,6 +110,7 @@ export type ClientGameState = {
   myPeerId: string
   lastEvent: SpecialEvent
   config: GameConfig
+  pendingDrawForMeCardId: string | null
 }
 
 export type GameAction =
