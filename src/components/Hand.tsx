@@ -199,7 +199,11 @@ export default function Hand({
                 : `出す (${selectedCards.length}枚)`}
             </button>
             <button className="btn-pass" onClick={handlePass}>
-              {deckCount > 0 ? 'パス（1枚引く）' : 'パス'}
+              {deckCount > 0
+                ? afterDrawMode
+                  ? '出さない'
+                  : 'ドロー→出さない'
+                : 'パス'}
             </button>
             {inabauwaAvailable && onInabauwa && (
               <button className="btn-inabauwa" onClick={onInabauwa}>
@@ -208,7 +212,7 @@ export default function Hand({
             )}
           </div>
           <p className="hand-shortcut-hint">
-            ショートカット: Enter = 出す / P = パス / I = イナバウワー
+            ショートカット: Enter = 出す / P = ドロー→出さない / I = イナバウワー
           </p>
           {afterDrawMode && (
             <p className="hand-after-draw-hint">

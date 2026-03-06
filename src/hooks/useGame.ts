@@ -341,7 +341,7 @@ export function useGame({
     return () => {
       window.clearTimeout(timer)
     }
-  }, [role, gameState?.phase, gameState?.currentPlayerIndex, processAction])
+  }, [role, gameState, processAction])
 
   return {
     gameState,
