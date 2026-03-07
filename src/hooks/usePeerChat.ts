@@ -15,9 +15,12 @@ export type PeerRole = 'host' | 'client'
 
 type WireJoin = { type: 'join'; nickname: string }
 type WireChat = { type: 'chat'; nickname: string; text: string }
-type WireMessage = WireJoin | WireChat | WireGameData
+type WireHeartbeat = { type: 'peer:heartbeat'; ts: number }
+type WireMessage = WireJoin | WireChat | WireHeartbeat | WireGameData
 
 const MAX_HOST_CONNECTIONS = 2
+const COMM_CHECK_INTERVAL_MS = 20 * 1000
+const HEARTBEAT_INTERVAL_MS = 15 * 1000
 
 export function usePeerChat(nickname: string, role: PeerRole) {
   const [myId, setMyId] = useState<string | null>(null)
@@ -34,6 +37,9 @@ export function usePeerChat(nickname: string, role: PeerRole) {
   const nicknameByPeerIdRef = useRef<Map<string, string>>(new Map())
   const nicknameRef = useRef(nickname)
   nicknameRef.current = nickname
+  const updateConnectedPeersRef = useRef<() => void>(() => {})
+  const lastHeartbeatByPeerRef = useRef<Map<string, number>>(new Map())
+  const lastHeartbeatAtRef = useRef<number>(0)
 
   // ゲームデータハンドラ（useGame から登録）
   const onGameDataRef = useRef<((fromPeerId: string, data: WireGameData) => void) | null>(null)
@@ -53,6 +59,7 @@ export function usePeerChat(nickname: string, role: PeerRole) {
       Array.from(nicknameByPeerIdRef.current.entries()).map(([peerId, nick]) => ({ peerId, nickname: nick }))
     )
   }, [])
+  updateConnectedPeersRef.current = updateConnectedPeers
 
   const isFullyConnected =
     role === 'host' ? connectionCount >= MAX_HOST_CONNECTIONS : connectionCount >= 1
@@ -64,6 +71,7 @@ export function usePeerChat(nickname: string, role: PeerRole) {
         return
       }
       connectionsRef.current.push(conn)
+      lastHeartbeatByPeerRef.current.set(conn.peer, Date.now())
       setConnectionCount(connectionsRef.current.length)
       setConnectionStatus(
         connectionsRef.current.length >= MAX_HOST_CONNECTIONS ? 'connected' : 'disconnected'
@@ -73,6 +81,11 @@ export function usePeerChat(nickname: string, role: PeerRole) {
       conn.on('data', (data: unknown) => {
         const msg = data as WireMessage
         if (!msg || typeof msg !== 'object' || !('type' in msg)) return
+
+        if (msg.type === 'peer:heartbeat') {
+          lastHeartbeatByPeerRef.current.set(conn.peer, Date.now())
+          return
+        }
 
         // ゲームメッセージはゲームハンドラへ
         if (msg.type === 'game:action' || msg.type === 'game:state' || msg.type === 'game:reveal' || msg.type === 'game:error' || msg.type === 'game:reset') {
@@ -104,6 +117,7 @@ export function usePeerChat(nickname: string, role: PeerRole) {
 
       conn.on('close', () => {
         connectionsRef.current = connectionsRef.current.filter((c) => c !== conn)
+        lastHeartbeatByPeerRef.current.delete(conn.peer)
         nicknameByPeerIdRef.current.delete(conn.peer)
         updateConnectedPeers()
         setConnectionCount(connectionsRef.current.length)
@@ -121,6 +135,7 @@ export function usePeerChat(nickname: string, role: PeerRole) {
     (conn: DataConnection) => {
       if (connRef.current) return
       connRef.current = conn
+      lastHeartbeatAtRef.current = Date.now()
       setConnectionCount(1)
       setConnectionStatus('connected')
       setError(null)
@@ -128,6 +143,11 @@ export function usePeerChat(nickname: string, role: PeerRole) {
       conn.on('data', (data: unknown) => {
         const msg = data as WireMessage
         if (!msg || typeof msg !== 'object' || !('type' in msg)) return
+
+        if (msg.type === 'peer:heartbeat') {
+          lastHeartbeatAtRef.current = Date.now()
+          return
+        }
 
         // ゲームメッセージはゲームハンドラへ
         if (msg.type === 'game:action' || msg.type === 'game:state' || msg.type === 'game:reveal' || msg.type === 'game:error' || msg.type === 'game:reset') {
@@ -179,7 +199,50 @@ export function usePeerChat(nickname: string, role: PeerRole) {
     })
 
     peerRef.current = peer
+
+    const heartbeatPayload = (): WireHeartbeat => ({ type: 'peer:heartbeat', ts: Date.now() })
+
+    const heartbeatInterval = window.setInterval(() => {
+      if (role === 'host') {
+        connectionsRef.current.forEach((c) => {
+          if (c.open) c.send(heartbeatPayload())
+        })
+      } else {
+        if (connRef.current?.open) connRef.current.send(heartbeatPayload())
+      }
+    }, HEARTBEAT_INTERVAL_MS)
+
+    const commCheckInterval = window.setInterval(() => {
+      const now = Date.now()
+      if (role === 'host') {
+        const stale = connectionsRef.current.filter((c) => {
+          const last = lastHeartbeatByPeerRef.current.get(c.peer) ?? 0
+          return now - last > COMM_CHECK_INTERVAL_MS || !c.open
+        })
+        if (stale.length > 0) {
+          stale.forEach((c) => {
+            lastHeartbeatByPeerRef.current.delete(c.peer)
+            nicknameByPeerIdRef.current.delete(c.peer)
+            try { c.close() } catch { /* ignore */ }
+          })
+          connectionsRef.current = connectionsRef.current.filter((c) => !stale.includes(c))
+          setConnectionCount(connectionsRef.current.length)
+          setConnectionStatus(connectionsRef.current.length >= MAX_HOST_CONNECTIONS ? 'connected' : 'disconnected')
+          updateConnectedPeersRef.current()
+        }
+      } else {
+        const last = lastHeartbeatAtRef.current
+        if (connRef.current && (now - last > COMM_CHECK_INTERVAL_MS || !connRef.current.open)) {
+          connRef.current = null
+          setConnectionCount(0)
+          setConnectionStatus('disconnected')
+        }
+      }
+    }, COMM_CHECK_INTERVAL_MS)
+
     return () => {
+      window.clearInterval(heartbeatInterval)
+      window.clearInterval(commCheckInterval)
       connRef.current?.close()
       connRef.current = null
       connectionsRef.current.forEach((c) => c.close())

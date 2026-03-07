@@ -614,5 +614,6 @@ export function toClientGameState(state: FullGameState, forPeerId: string): Clie
         ? state.pendingDraw.cardId
         : null,
     myPeerId: forPeerId,
+    turnTimerExpiresAt: null,
   }
 }

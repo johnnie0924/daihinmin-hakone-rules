@@ -111,6 +111,8 @@ export type ClientGameState = {
   lastEvent: SpecialEvent
   config: GameConfig
   pendingDrawForMeCardId: string | null
+  /** 自分の手番のとき、操作受付の残り時間（ミリ秒タイムスタンプ）。null のときは非表示 */
+  turnTimerExpiresAt: number | null
 }
 
 export type GameAction =

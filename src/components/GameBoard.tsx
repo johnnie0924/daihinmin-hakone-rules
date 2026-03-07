@@ -70,6 +70,7 @@ export default function GameBoard({
   const [inabauwaMode, setInabauwaMode] = useState(false)
   const [visibleEvent, setVisibleEvent] = useState<SpecialEvent>('none')
   const [selectedCards, setSelectedCards] = useState<Card[]>([])
+  const [, setTick] = useState(0)
 
   useEffect(() => {
     if (!gameState.lastEvent || gameState.lastEvent === 'none') {
@@ -90,6 +91,17 @@ export default function GameBoard({
   const parentPlayer = gameState.players[gameState.parentIndex]
   const isAfterDrawMode =
     isMyTurn && gameState.pendingDrawForMeCardId != null
+
+  useEffect(() => {
+    if (!gameState.turnTimerExpiresAt || !isMyTurn) return
+    const id = setInterval(() => setTick((t) => t + 1), 1000)
+    return () => clearInterval(id)
+  }, [gameState.turnTimerExpiresAt, isMyTurn])
+
+  const turnSecondsLeft =
+    gameState.turnTimerExpiresAt != null && isMyTurn
+      ? Math.max(0, Math.ceil((gameState.turnTimerExpiresAt - Date.now()) / 1000))
+      : null
 
   const lastField = gameState.field.length > 0 ? gameState.field[gameState.field.length - 1] : null
   const eventPlayer =
@@ -359,6 +371,11 @@ export default function GameBoard({
 
       {/* 自分の情報と手札 */}
       <div className="self-area">
+        {turnSecondsLeft !== null && (
+          <p className="turn-timer" aria-live="polite">
+            操作時間 残り {turnSecondsLeft} 秒
+          </p>
+        )}
         <PlayerInfo
           player={myPlayer}
           isCurrentPlayer={isMyTurn}

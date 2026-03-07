@@ -18,6 +18,8 @@ import {
 } from './useGameEngine'
 import { chooseNpcAction } from '../logic/npc'
 
+const OPERATION_TIMEOUT_MS = 20 * 1000
+
 type ConnectedPeer = { peerId: string; nickname: string }
 
 type Props = {
@@ -59,6 +61,9 @@ export function useGame({
   const npcConfigsRef = useRef<NpcConfig[] | null>(null)
   // NPCターン実行の多重防止キー
   const npcTurnKeyRef = useRef<string | null>(null)
+  // 人間の手番の操作タイマー満了時刻（同じ手番中は更新しない）
+  const turnTimerExpiresAtRef = useRef<number | null>(null)
+  const turnTimerKeyRef = useRef<string | null>(null)
 
   useEffect(() => {
     if (initialConfig) {
@@ -113,9 +118,30 @@ export function useGame({
   const broadcastState = useCallback(
     (full: FullGameState) => {
       fullStateRef.current = full
-      // 各クライアントにそのクライアント専用の状態を送信
+      if (full.phase === 'playing') {
+        const cur = full.players[full.currentPlayerIndex]
+        if (cur && !cur.isNpc) {
+          const key = `${full.round}-${full.currentPlayerIndex}`
+          if (turnTimerKeyRef.current !== key) {
+            turnTimerKeyRef.current = key
+            turnTimerExpiresAtRef.current = Date.now() + OPERATION_TIMEOUT_MS
+          }
+        } else {
+          turnTimerKeyRef.current = null
+          turnTimerExpiresAtRef.current = null
+        }
+      } else {
+        turnTimerKeyRef.current = null
+        turnTimerExpiresAtRef.current = null
+      }
       full.players.forEach((p) => {
-        const clientState = toClientGameState(full, p.peerId)
+        const base = toClientGameState(full, p.peerId)
+        const cur = full.players[full.currentPlayerIndex]
+        const isCurrentHuman = cur && !cur.isNpc && cur.peerId === p.peerId
+        const clientState: ClientGameState = {
+          ...base,
+          turnTimerExpiresAt: isCurrentHuman ? turnTimerExpiresAtRef.current : null,
+        }
         if (p.peerId === myPeerId) {
           setGameState(clientState)
         } else {
@@ -312,6 +338,27 @@ export function useGame({
       sendGameData('all', { type: 'game:action', action })
     }
   }, [role, myPeerId, processAction, sendGameData])
+
+  // ────────── ホスト: 人間の手番の操作受付タイムアウト（20秒） ──────────
+
+  useEffect(() => {
+    if (role !== 'host') return
+    const full = fullStateRef.current
+    if (!full || full.phase !== 'playing') return
+    const current = full.players[full.currentPlayerIndex]
+    if (current?.isNpc) return
+
+    const peerId = current.peerId
+    const timer = window.setTimeout(() => {
+      const latest = fullStateRef.current
+      if (!latest || latest.phase !== 'playing') return
+      const cur = latest.players[latest.currentPlayerIndex]
+      if (cur?.peerId !== peerId) return
+      processAction(peerId, { kind: 'pass' })
+    }, OPERATION_TIMEOUT_MS)
+
+    return () => window.clearTimeout(timer)
+  }, [role, gameState, processAction])
 
   // ────────── ホスト: NPCターンの自動実行 ──────────
 
