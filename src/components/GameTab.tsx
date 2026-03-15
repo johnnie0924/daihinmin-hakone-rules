@@ -65,6 +65,11 @@ function GameTab({
                     : `このゲーム: 人間${participantSummary.humanCount}人 ＋ NPC${participantSummary.npcCount}人（戦略: ${participantSummary.npcStrategies.join(', ')}）`}
                 </p>
               )}
+              {participantSummary && participantSummary.humanCount === 1 && (
+                <p className="game-hint">
+                  現在1人です。デフォルトではNPCを自動追加して3人戦を開始します。NPCをオフにして1人練習モードとして遊ぶこともできます（NPC設定から変更できます）。
+                </p>
+              )}
               <button className="btn-start-game" onClick={onStartGame}>
                 ゲーム開始
               </button>

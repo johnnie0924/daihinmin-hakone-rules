@@ -122,6 +122,9 @@ function GameConfigPanel({
 
         {isNpcPanelOpen && (
           <div className="npc-config-body">
+            <p className="npc-config-help">
+              接続人数に応じてNPCの初期状態が変わります。ここでON/OFFや戦略を変えると、その設定が優先されます。
+            </p>
             <label className="game-config-checkbox">
               <input
                 type="checkbox"

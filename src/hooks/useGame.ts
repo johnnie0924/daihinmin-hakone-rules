@@ -22,6 +22,12 @@ const OPERATION_TIMEOUT_MS = 20 * 1000
 
 type ConnectedPeer = { peerId: string; nickname: string }
 
+export type ParticipantSummary = {
+  humanPlayerCount: number
+  plannedNpcCount: number
+  plannedNpcStrategies: NpcConfig['strategy'][]
+}
+
 type Props = {
   role: PeerRole
   myPeerId: string
@@ -85,8 +91,8 @@ export function useGame({
     const availableSlots = Math.max(0, maxSlots - humanPlayers.length)
 
     const configs = npcConfigsRef.current ?? []
-    const npcPlayers = configs
-      .filter((c) => c.enabled)
+    const enabled = configs.filter((c) => c.enabled)
+    const npcPlayers = enabled
       .slice(0, availableSlots)
       .map((cfg) => ({
         peerId: cfg.id,
@@ -100,6 +106,20 @@ export function useGame({
       allPlayers: [...humanPlayers, ...npcPlayers],
     }
   }, [myPeerId, myNickname, connectedPeers])
+
+  const participantSummary: ParticipantSummary = (() => {
+    const maxSlots = 3
+    const humanCount = 1 + connectedPeers.length
+    const availableSlots = Math.max(0, maxSlots - humanCount)
+    const configs = npcConfigsRef.current ?? []
+    const enabled = configs.filter((c) => c.enabled)
+    const used = enabled.slice(0, availableSlots)
+    return {
+      humanPlayerCount: humanCount,
+      plannedNpcCount: used.length,
+      plannedNpcStrategies: used.map((c) => c.strategy),
+    }
+  })()
 
   // エラーを出したプレイヤーにのみ通知（ホストはローカル、クライアントは送信）
   const reportError = useCallback(
@@ -405,5 +425,6 @@ export function useGame({
     clearGameError,
     resetGame,
     continueGame,
+    participantSummary,
   }
 }

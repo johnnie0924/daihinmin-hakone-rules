@@ -25,6 +25,7 @@ function App() {
   const [enableOldRoad, setEnableOldRoad] = useState(DEFAULT_GAME_CONFIG.enableOldRoad)
   const [enableSekisho, setEnableSekisho] = useState(DEFAULT_GAME_CONFIG.enableSekisho)
   const [fillWithNpc, setFillWithNpc] = useState(true)
+  const [npcManualOverride, setNpcManualOverride] = useState(false)
   const [npcConfigs, setNpcConfigs] = useState<NpcConfig[]>([
     { id: 'npc-1', nickname: '箱根トラベラー', strategy: 'balanced', enabled: true },
     { id: 'npc-2', nickname: '山の番人', strategy: 'aggressive', enabled: false },
@@ -76,24 +77,30 @@ function App() {
   const plannedPlayerCount = 1 + connectionCount + enabledNpcCount
   const canStartGameAsHost = role === 'host' && plannedPlayerCount >= 3
 
-  const npcStrategiesJa: Record<NpcConfig['strategy'], string> = {
-    balanced: 'バランス',
-    aggressive: '攻め',
-    random: 'ランダム',
-  }
-
-  const npcSummary = (() => {
-    const maxSlots = 3
-    const humanCount = 1 + connectionCount
-    const availableSlots = Math.max(0, maxSlots - humanCount)
-    const enabled = fillWithNpc ? npcConfigs.filter((c) => c.enabled) : []
-    const used = enabled.slice(0, availableSlots)
-    return {
-      humanCount,
-      npcCount: used.length,
-      npcStrategies: used.map((c) => npcStrategiesJa[c.strategy]),
-    }
-  })()
+  // 人間数に応じたNPCデフォルト（ユーザーが明示的に変更するまでは自動調整）
+  useEffect(() => {
+    if (npcManualOverride) return
+    setNpcConfigs((prev) => {
+      const maxSlots = 3
+      const humanCount = 1 + connectionCount
+      const availableSlots = Math.max(0, maxSlots - humanCount)
+      if (!fillWithNpc || availableSlots <= 0) {
+        return prev.map((c) => ({ ...c, enabled: false }))
+      }
+      const desiredNpcCount =
+        humanCount === 1 ? Math.min(2, availableSlots)
+        : humanCount === 2 ? Math.min(1, availableSlots)
+        : 0
+      let count = 0
+      return prev.map((c) => {
+        if (count < desiredNpcCount) {
+          count++
+          return { ...c, enabled: true }
+        }
+        return { ...c, enabled: false }
+      })
+    })
+  }, [connectionCount, fillWithNpc, npcManualOverride])
 
   // ゲームデータハンドラを登録
   useEffect(() => {
@@ -119,6 +126,11 @@ function App() {
 
   const handleStartGame = () => {
     if (role !== 'host') return
+    const npcStrategiesJa: Record<NpcConfig['strategy'], string> = {
+      balanced: 'バランス',
+      aggressive: '攻め',
+      random: 'ランダム',
+    }
     const onOff = (v: boolean) => (v ? 'ON' : 'OFF')
     const base =
       `箱根ルールでゲームを開始します。` +
@@ -128,11 +140,12 @@ function App() {
       `天下の険=${onOff(enableTenkanoken)}, ` +
       `旧街道の一里塚=${onOff(enableOldRoad)}, ` +
       `箱根関所=${onOff(enableSekisho)}`
-    const humanPart = `人間${npcSummary.humanCount}人`
+    const ps = game.participantSummary
+    const humanPart = `人間${ps.humanPlayerCount}人`
     const npcPart =
-      npcSummary.npcCount === 0
+      ps.plannedNpcCount === 0
         ? '（NPCなし）'
-        : `＋ NPC${npcSummary.npcCount}人（戦略: ${npcSummary.npcStrategies.join(', ')}）`
+        : `＋ NPC${ps.plannedNpcCount}人（戦略: ${ps.plannedNpcStrategies.map((s) => npcStrategiesJa[s]).join(', ')}）`
     const msg = `${base} このゲームは ${humanPart}${npcPart} で行われます。`
     game.startGame()
     sendMessage(msg)
@@ -188,9 +201,15 @@ function App() {
           enableSekisho={enableSekisho}
           onChangeEnableSekisho={setEnableSekisho}
           npcConfigs={npcConfigs}
-          onChangeNpcConfigs={setNpcConfigs}
+          onChangeNpcConfigs={(next) => {
+            setNpcManualOverride(true)
+            setNpcConfigs(next)
+          }}
           fillWithNpc={fillWithNpc}
-          onChangeFillWithNpc={setFillWithNpc}
+          onChangeFillWithNpc={(value) => {
+            setNpcManualOverride(true)
+            setFillWithNpc(value)
+          }}
           disabled={game.gameState != null}
         />
       )}
@@ -237,7 +256,13 @@ function App() {
           connectionCount={connectionCount}
           plannedPlayerCount={plannedPlayerCount}
           canStartGame={canStartGameAsHost}
-          participantSummary={npcSummary}
+          participantSummary={{
+            humanCount: game.participantSummary.humanPlayerCount,
+            npcCount: game.participantSummary.plannedNpcCount,
+            npcStrategies: game.participantSummary.plannedNpcStrategies.map((s) =>
+              s === 'balanced' ? 'バランス' : s === 'aggressive' ? '攻め' : 'ランダム'
+            ),
+          }}
           gameState={game.gameState}
           revealInfo={game.revealInfo}
           gameError={game.gameError}
