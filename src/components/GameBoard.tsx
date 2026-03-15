@@ -99,7 +99,10 @@ export default function GameBoard({
   }, [gameState.lastEvent, gameState.field.length])
 
   useEffect(() => {
-    if (gameState.field.length !== 0 || gameState.lastEvent !== 'eruption') return
+    if (gameState.field.length > 0 || gameState.lastEvent !== 'eruption') {
+      setEruptionDisplayField(null)
+      return
+    }
     setEruptionDisplayField(lastNonEmptyFieldRef.current.slice())
     const t = setTimeout(() => {
       setEruptionDisplayField(null)
