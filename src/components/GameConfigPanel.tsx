@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import type { NpcConfig } from '../types/game'
 
 type Props = {
@@ -43,6 +44,8 @@ function GameConfigPanel({
     const next = npcConfigs.map((cfg, i) => (i === index ? { ...cfg, ...patch } : cfg))
     onChangeNpcConfigs(next)
   }
+
+  const [isNpcPanelOpen, setIsNpcPanelOpen] = useState(false)
 
   return (
     <section className="game-config-section">
@@ -108,60 +111,72 @@ function GameConfigPanel({
       </div>
 
       <div className="game-config-npc">
-        <h3 className="game-config-subtitle">NPC設定</h3>
-        <label className="game-config-checkbox">
-          <input
-            type="checkbox"
-            checked={fillWithNpc}
-            onChange={(e) => onChangeFillWithNpc(e.target.checked)}
-            disabled={disabled}
-          />
-          空き枠をCPUで埋める
-        </label>
+        <button
+          type="button"
+          className="npc-config-toggle"
+          onClick={() => setIsNpcPanelOpen((v) => !v)}
+          disabled={disabled}
+        >
+          NPC設定 {isNpcPanelOpen ? '▲' : '▼'}
+        </button>
 
-        {npcConfigs.map((cfg, index) => (
-          <div key={cfg.id} className="game-config-npc-slot">
-            <div className="game-config-npc-row">
-              <span className="game-config-npc-label">NPCスロット{index + 1}</span>
-              <label className="game-config-checkbox">
-                <input
-                  type="checkbox"
-                  checked={cfg.enabled}
-                  onChange={(e) => handleNpcChange(index, { enabled: e.target.checked })}
-                  disabled={disabled || !fillWithNpc}
-                />
-                有効
-              </label>
-            </div>
-            <div className="game-config-npc-row">
-              <label>
-                戦略
-                <select
-                  value={cfg.strategy}
-                  onChange={(e) =>
-                    handleNpcChange(index, {
-                      strategy: e.target.value as NpcConfig['strategy'],
-                    })
-                  }
-                  disabled={disabled || !fillWithNpc}
-                >
-                  <option value="balanced">バランス</option>
-                  <option value="aggressive">攻め</option>
-                  <option value="random">ランダム</option>
-                </select>
-              </label>
-              <label>
-                ニックネーム
-                <input
-                  type="text"
-                  value={cfg.nickname}
-                  onChange={(e) => handleNpcChange(index, { nickname: e.target.value })}
-                  disabled={disabled || !fillWithNpc}
-                />
-              </label>
-            </div>
+        {isNpcPanelOpen && (
+          <div className="npc-config-body">
+            <label className="game-config-checkbox">
+              <input
+                type="checkbox"
+                checked={fillWithNpc}
+                onChange={(e) => onChangeFillWithNpc(e.target.checked)}
+                disabled={disabled}
+              />
+              不足人数をNPCで自動補完する
+            </label>
+
+            {npcConfigs.map((cfg, index) => (
+              <div key={cfg.id} className="game-config-npc-slot">
+                <div className="game-config-npc-row">
+                  <span className="game-config-npc-label">NPCスロット{index + 1}</span>
+                  <label className="game-config-checkbox">
+                    <input
+                      type="checkbox"
+                      checked={cfg.enabled}
+                      onChange={(e) => handleNpcChange(index, { enabled: e.target.checked })}
+                      disabled={disabled || !fillWithNpc}
+                    />
+                    有効
+                  </label>
+                </div>
+                <div className="game-config-npc-row">
+                  <label>
+                    戦略
+                    <select
+                      value={cfg.strategy}
+                      onChange={(e) =>
+                        handleNpcChange(index, {
+                          strategy: e.target.value as NpcConfig['strategy'],
+                        })
+                      }
+                      disabled={disabled || !fillWithNpc}
+                    >
+                      <option value="balanced">バランス</option>
+                      <option value="aggressive">攻め</option>
+                      <option value="random">ランダム</option>
+                    </select>
+                  </label>
+                  <label>
+                    ニックネーム
+                    <input
+                      type="text"
+                      value={cfg.nickname}
+                      onChange={(e) => handleNpcChange(index, { nickname: e.target.value })}
+                      disabled={disabled || !fillWithNpc}
+                    />
+                  </label>
+                </div>
+              </div>
+            ))}
           </div>
-        ))}
+        )}
       </div>
     </section>
   )

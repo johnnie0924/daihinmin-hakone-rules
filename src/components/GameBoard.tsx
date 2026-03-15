@@ -72,6 +72,7 @@ export default function GameBoard({
   const [selectedCards, setSelectedCards] = useState<Card[]>([])
   const [, setTick] = useState(0)
   const lastNonEmptyFieldRef = useRef<FieldEntry[]>([])
+  const eruptionPlayerIdRef = useRef<string | null>(null)
   const [eruptionDisplayField, setEruptionDisplayField] = useState<FieldEntry[] | null>(null)
   const [showScoreBoard, setShowScoreBoard] = useState(false)
   const [eventCooldownActive, setEventCooldownActive] = useState(false)
@@ -101,14 +102,21 @@ export default function GameBoard({
   useEffect(() => {
     if (gameState.field.length > 0 || gameState.lastEvent !== 'eruption') {
       setEruptionDisplayField(null)
+      eruptionPlayerIdRef.current = null
       return
     }
-    setEruptionDisplayField(lastNonEmptyFieldRef.current.slice())
+    const saved = lastNonEmptyFieldRef.current.slice()
+    setEruptionDisplayField(saved)
+    eruptionPlayerIdRef.current =
+      saved.length > 0 ? saved[saved.length - 1].playerId : null
     const t = setTimeout(() => {
       setEruptionDisplayField(null)
       setVisibleEvent('eruption')
     }, 1000)
-    const t2 = setTimeout(() => setVisibleEvent('none'), 3000)
+    const t2 = setTimeout(() => {
+      setVisibleEvent('none')
+      eruptionPlayerIdRef.current = null
+    }, 3000)
     return () => {
       clearTimeout(t)
       clearTimeout(t2)
@@ -156,8 +164,13 @@ export default function GameBoard({
       : null
 
   const lastField = gameState.field.length > 0 ? gameState.field[gameState.field.length - 1] : null
+  const eruptionPlayerId = visibleEvent === 'eruption' ? eruptionPlayerIdRef.current : null
   const eventPlayer =
-    lastField != null ? gameState.players.find((p) => p.peerId === lastField.playerId) : undefined
+    lastField != null
+      ? gameState.players.find((p) => p.peerId === lastField.playerId)
+      : eruptionPlayerId != null
+        ? gameState.players.find((p) => p.peerId === eruptionPlayerId)
+        : undefined
   const eventPlayerLabel =
     eventPlayer != null
       ? eventPlayer.peerId === gameState.myPeerId

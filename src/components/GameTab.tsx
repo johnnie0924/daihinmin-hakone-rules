@@ -8,6 +8,11 @@ type Props = {
   connectionCount: number
   plannedPlayerCount: number
   canStartGame: boolean
+  participantSummary?: {
+    humanCount: number
+    npcCount: number
+    npcStrategies: string[]
+  }
   gameState: ClientGameState | null
   revealInfo: RevealInfo | null
   gameError: string | null
@@ -28,6 +33,7 @@ function GameTab({
   connectionCount,
   plannedPlayerCount,
   canStartGame,
+  participantSummary,
   gameState,
   revealInfo,
   gameError,
@@ -52,6 +58,13 @@ function GameTab({
             <>
               <p>接続中のプレイヤー: {connectionCount}人</p>
               <p>参加予定人数: {plannedPlayerCount}人（ホスト+クライアント+NPC）</p>
+              {participantSummary && (
+                <p className="participant-summary">
+                  {participantSummary.npcCount === 0
+                    ? `このゲーム: 人間${participantSummary.humanCount}人（NPCなし）`
+                    : `このゲーム: 人間${participantSummary.humanCount}人 ＋ NPC${participantSummary.npcCount}人（戦略: ${participantSummary.npcStrategies.join(', ')}）`}
+                </p>
+              )}
               <button className="btn-start-game" onClick={onStartGame}>
                 ゲーム開始
               </button>

@@ -24,7 +24,7 @@ function App() {
   const [enableTenkanoken, setEnableTenkanoken] = useState(DEFAULT_GAME_CONFIG.enableTenkanoken)
   const [enableOldRoad, setEnableOldRoad] = useState(DEFAULT_GAME_CONFIG.enableOldRoad)
   const [enableSekisho, setEnableSekisho] = useState(DEFAULT_GAME_CONFIG.enableSekisho)
-  const [fillWithNpc, setFillWithNpc] = useState(false)
+  const [fillWithNpc, setFillWithNpc] = useState(true)
   const [npcConfigs, setNpcConfigs] = useState<NpcConfig[]>([
     { id: 'npc-1', nickname: '箱根トラベラー', strategy: 'balanced', enabled: true },
     { id: 'npc-2', nickname: '山の番人', strategy: 'aggressive', enabled: false },
@@ -76,6 +76,25 @@ function App() {
   const plannedPlayerCount = 1 + connectionCount + enabledNpcCount
   const canStartGameAsHost = role === 'host' && plannedPlayerCount >= 3
 
+  const npcStrategiesJa: Record<NpcConfig['strategy'], string> = {
+    balanced: 'バランス',
+    aggressive: '攻め',
+    random: 'ランダム',
+  }
+
+  const npcSummary = (() => {
+    const maxSlots = 3
+    const humanCount = 1 + connectionCount
+    const availableSlots = Math.max(0, maxSlots - humanCount)
+    const enabled = fillWithNpc ? npcConfigs.filter((c) => c.enabled) : []
+    const used = enabled.slice(0, availableSlots)
+    return {
+      humanCount,
+      npcCount: used.length,
+      npcStrategies: used.map((c) => npcStrategiesJa[c.strategy]),
+    }
+  })()
+
   // ゲームデータハンドラを登録
   useEffect(() => {
     setGameDataHandler(game.handleGameData)
@@ -100,9 +119,8 @@ function App() {
 
   const handleStartGame = () => {
     if (role !== 'host') return
-    game.startGame()
     const onOff = (v: boolean) => (v ? 'ON' : 'OFF')
-    const msg =
+    const base =
       `箱根ルールでゲームを開始します。` +
       `ラウンド数: ${roundsPerGame} / 特殊ルール: ` +
       `スイッチバック=${onOff(enableSwitchback)}, ` +
@@ -110,6 +128,13 @@ function App() {
       `天下の険=${onOff(enableTenkanoken)}, ` +
       `旧街道の一里塚=${onOff(enableOldRoad)}, ` +
       `箱根関所=${onOff(enableSekisho)}`
+    const humanPart = `人間${npcSummary.humanCount}人`
+    const npcPart =
+      npcSummary.npcCount === 0
+        ? '（NPCなし）'
+        : `＋ NPC${npcSummary.npcCount}人（戦略: ${npcSummary.npcStrategies.join(', ')}）`
+    const msg = `${base} このゲームは ${humanPart}${npcPart} で行われます。`
+    game.startGame()
     sendMessage(msg)
   }
 
@@ -212,6 +237,7 @@ function App() {
           connectionCount={connectionCount}
           plannedPlayerCount={plannedPlayerCount}
           canStartGame={canStartGameAsHost}
+          participantSummary={npcSummary}
           gameState={game.gameState}
           revealInfo={game.revealInfo}
           gameError={game.gameError}
