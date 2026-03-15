@@ -1,5 +1,5 @@
-import { useState, useEffect, useMemo } from 'react'
-import type { Card, ClientGameState, SpecialEvent, HandKind } from '../types/game'
+import { useState, useEffect, useMemo, useRef } from 'react'
+import type { Card, ClientGameState, SpecialEvent, HandKind, FieldEntry } from '../types/game'
 import type { RevealInfo } from '../hooks/useGame'
 import { analyzeHand, canPlay } from '../hooks/useGameEngine'
 import CardView from './CardView'
@@ -71,10 +71,24 @@ export default function GameBoard({
   const [visibleEvent, setVisibleEvent] = useState<SpecialEvent>('none')
   const [selectedCards, setSelectedCards] = useState<Card[]>([])
   const [, setTick] = useState(0)
+  const lastNonEmptyFieldRef = useRef<FieldEntry[]>([])
+  const [eruptionDisplayField, setEruptionDisplayField] = useState<FieldEntry[] | null>(null)
+  const [showScoreBoard, setShowScoreBoard] = useState(false)
+  const [eventCooldownActive, setEventCooldownActive] = useState(false)
+  const prevVisibleEventRef = useRef<SpecialEvent>('none')
+  const ROUND_END_DELAY_MS = 2500
+  const EVENT_COOLDOWN_MS = 600
+
+  if (gameState.field.length > 0) {
+    lastNonEmptyFieldRef.current = gameState.field
+  }
 
   useEffect(() => {
     if (!gameState.lastEvent || gameState.lastEvent === 'none') {
       setVisibleEvent('none')
+      return
+    }
+    if (gameState.lastEvent === 'eruption' && gameState.field.length === 0) {
       return
     }
     setVisibleEvent(gameState.lastEvent)
@@ -82,7 +96,42 @@ export default function GameBoard({
       setVisibleEvent('none')
     }, 2000)
     return () => clearTimeout(t)
-  }, [gameState.lastEvent])
+  }, [gameState.lastEvent, gameState.field.length])
+
+  useEffect(() => {
+    if (gameState.field.length !== 0 || gameState.lastEvent !== 'eruption') return
+    setEruptionDisplayField(lastNonEmptyFieldRef.current.slice())
+    const t = setTimeout(() => {
+      setEruptionDisplayField(null)
+      setVisibleEvent('eruption')
+    }, 1000)
+    const t2 = setTimeout(() => setVisibleEvent('none'), 3000)
+    return () => {
+      clearTimeout(t)
+      clearTimeout(t2)
+    }
+  }, [gameState.field.length, gameState.lastEvent])
+
+  useEffect(() => {
+    if (visibleEvent === 'none' && prevVisibleEventRef.current !== 'none') {
+      setEventCooldownActive(true)
+      const t = setTimeout(() => setEventCooldownActive(false), EVENT_COOLDOWN_MS)
+      return () => clearTimeout(t)
+    }
+    prevVisibleEventRef.current = visibleEvent
+  }, [visibleEvent])
+
+  const eventOrCooldownDisabled = visibleEvent !== 'none' || eventCooldownActive
+
+  useEffect(() => {
+    if (gameState.phase === 'playing') setShowScoreBoard(false)
+  }, [gameState.phase])
+
+  useEffect(() => {
+    if (gameState.phase !== 'roundEnd') return
+    const t = setTimeout(() => setShowScoreBoard(true), ROUND_END_DELAY_MS)
+    return () => clearTimeout(t)
+  }, [gameState.phase])
 
   const myPlayer = gameState.players.find((p) => p.peerId === gameState.myPeerId)!
   const opponents = gameState.players.filter((p) => p.peerId !== gameState.myPeerId)
@@ -200,7 +249,7 @@ export default function GameBoard({
     setInabauwaMode(false)
   }
 
-  if (gameState.phase === 'roundEnd' || gameState.phase === 'gameEnd') {
+  if (gameState.phase === 'gameEnd' || (gameState.phase === 'roundEnd' && showScoreBoard)) {
     return (
       <div className="gameboard">
         <ScoreBoard
@@ -213,6 +262,11 @@ export default function GameBoard({
       </div>
     )
   }
+
+  const roundWinnerPlayer =
+    gameState.phase === 'roundEnd' && gameState.roundWinner
+      ? gameState.players.find((p) => p.peerId === gameState.roundWinner)
+      : null
 
   return (
     <div className="gameboard">
@@ -265,6 +319,23 @@ export default function GameBoard({
           </div>
         )}
       </div>
+
+      {/* ラウンド終了時: 2.5秒間「〇〇が上がり！」を表示してからスコアボードへ */}
+      {gameState.phase === 'roundEnd' && roundWinnerPlayer && (
+        <div
+          className="round-end-overlay"
+          onClick={() => setShowScoreBoard(true)}
+          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setShowScoreBoard(true) }}
+          role="button"
+          tabIndex={0}
+          aria-label="スコアボードへ（タップでスキップ）"
+        >
+          <p className="round-end-message">
+            {roundWinnerPlayer.peerId === gameState.myPeerId ? '自分' : roundWinnerPlayer.nickname} が上がり！
+          </p>
+          <p className="round-end-skip">タップでスキップ</p>
+        </div>
+      )}
 
       {/* エラー表示 */}
       {gameError && (
@@ -348,8 +419,8 @@ export default function GameBoard({
               isCurrentPlayer={currentPlayer?.peerId === op.peerId}
               isSelf={false}
               score={gameState.scores[op.peerId] ?? 0}
-              onInabauwa={inabauwaAvailable && isMyTurn ? () => handleInabauwaClick() : undefined}
-              inabauwaEnabled={inabauwaAvailable && isMyTurn && !inabauwaMode}
+              onInabauwa={inabauwaAvailable && isMyTurn && !eventOrCooldownDisabled ? () => handleInabauwaClick() : undefined}
+              inabauwaEnabled={inabauwaAvailable && isMyTurn && !inabauwaMode && !eventOrCooldownDisabled}
             />
             {/* 相手の手札（裏向き） */}
             <div className="opponent-cards">
@@ -361,9 +432,9 @@ export default function GameBoard({
         ))}
       </div>
 
-      {/* 場 */}
+      {/* 場（8切り時は1秒間だけ直前の手を表示してから空にする） */}
       <Field
-        field={gameState.field}
+        field={eruptionDisplayField ?? gameState.field}
         suitLock={gameState.suitLock}
         deckCount={gameState.deckCount}
         playerNickname={playerNickname}
@@ -404,6 +475,7 @@ export default function GameBoard({
           onSelectionChange={setSelectedCards}
           afterDrawMode={isAfterDrawMode}
           drawnCardId={gameState.pendingDrawForMeCardId ?? undefined}
+          disabled={eventOrCooldownDisabled}
         />
       </div>
     </div>

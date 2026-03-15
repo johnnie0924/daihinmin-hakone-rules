@@ -1148,6 +1148,33 @@
 
 /* ────────── 箱根ルール 特殊イベント演出 ────────── */
 
+.round-end-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 95;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background: rgba(0, 0, 0, 0.6);
+  cursor: pointer;
+}
+
+.round-end-message {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #fff;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
+}
+
+.round-end-skip {
+  margin: 0;
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.9);
+}
+
 .event-overlay {
   position: fixed;
   inset: 0;
